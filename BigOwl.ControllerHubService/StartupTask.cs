@@ -17,12 +17,11 @@ namespace BigOwl.ControllerHubService
         BackgroundTaskDeferral deferral = null;
         AppServiceConnection connection;
 
-        //public OwlCommandQueue CommandQueue { get; set; }
+        public OwlCommandQueue CommandQueue { get; set; }
 
         public void Run(IBackgroundTaskInstance taskInstance)
         {
-
-            //CommandQueue = new OwlCommandQueue();
+            CommandQueue = new OwlCommandQueue();
 
             string name = Windows.ApplicationModel.Package.Current.Id.FamilyName;
             System.Diagnostics.Debug.WriteLine("FamilyName: " + name);
@@ -31,20 +30,12 @@ namespace BigOwl.ControllerHubService
             taskInstance.Canceled += TaskInstance_Canceled;
             System.Diagnostics.Debug.WriteLine(Windows.ApplicationModel.Package.Current.Id.FamilyName);
 
-            // 
-            // TODO: Insert code to perform background work
-            //
-            // If you start any asynchronous methods here, prevent the task
-            // from closing prematurely by using BackgroundTaskDeferral as
-            // described in http://aka.ms/backgroundtaskdeferral
-            //
-
             //Check to determine whether this activation was caused by an incoming app service connection
             var appServiceTrigger = taskInstance.TriggerDetails as AppServiceTriggerDetails;
             if (appServiceTrigger != null)
             {
                 //Verify that the app service connection is requesting the "StatusRelayService" that this class provides
-                if (appServiceTrigger.Name.Equals("ControllerHubService"))
+                if (appServiceTrigger.Name.Equals("BigOwl.ControllerHubService"))
                 {
                     //Store the connection and subscribe to the "RequestRecieved" event to be notified when clients send messages
                     connection = appServiceTrigger.AppServiceConnection;
@@ -76,7 +67,10 @@ namespace BigOwl.ControllerHubService
 
             if (message.ContainsKey("command"))
             {
-                OwlCommand c = (OwlCommand)message["command"];
+                string payload = (string)message["command"];
+
+                OwlCommand c = BigOwl.StatusRelay.RelayClient.DeSerializeOwlCommand(payload);
+                //OwlCommand c = (OwlCommand)message["command"];
                 if (c != null)
                 {
                     System.Diagnostics.Debug.WriteLine("Command: " + c.Command.ToString());
@@ -93,6 +87,7 @@ namespace BigOwl.ControllerHubService
 
             messageDeferral.Complete();
         }
+
         public void Shutdown()
         {
             //Tell everyone to relax and disable their controls

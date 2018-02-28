@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Serialization;
+using System.Text;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -24,11 +26,23 @@ namespace BigOwl.TestControllerApp
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        AppServiceConnection connection;
+        //AppServiceConnection connection;
+
+        BigOwl.StatusRelay.RelayClient relayClient;
+
 
         public MainPage()
         {
             this.InitializeComponent();
+            relayClient = new StatusRelay.RelayClient();
+            relayClient.OnMessageReceived += RelayClient_OnMessageReceived;
+        }
+
+        private void RelayClient_OnMessageReceived(ValueSet obj)
+        {
+            StringBuilder sb = new StringBuilder();
+            obj.Values.ToList().ForEach(v => sb.AppendLine(v.ToString()));
+            relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " +  sb.ToString();
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
@@ -42,42 +56,59 @@ namespace BigOwl.TestControllerApp
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            DoStuff();
+            DoStuffOwlClient();
         }
 
-        private async void DoStuff()
+        private async void DoStuffOwlClient()
         {
+            relayClient = new StatusRelay.RelayClient();
 
-            //connection.AppServiceName = "BigOwlStatusRelayService";
-            //connection.PackageFamilyName = "BigOwl.StatusRelayService-uwp_rtvxam156657y"
-
-            connection = new AppServiceConnection();
-            connection.AppServiceName = "BigOwl.ControllerHubService";
-            connection.PackageFamilyName = "BigOwl.ControllerHubService-uwp_rtvxam156657y";
-            AppServiceConnectionStatus status = await connection.OpenAsync();
-
-            if (status != AppServiceConnectionStatus.Success)
-            {
-                //deferral.Complete();
-                TestButton.Content = "Bad: " + status.ToString() + " -- " + DateTime.Now.ToString();
-                return;
-            }
-
-            //Send a message with the name "requestedPinValue" and the value "High"
-            //These work like loosely typed input parameters to a method
-            //requestedPinValue = "High";
-            var message = new ValueSet();
             OwlCommand c = new OwlCommand();
-
             c.Command = OwlCommand.Commands.RandomFull;
-            message["command"] = c;
-            AppServiceResponse response = await connection.SendMessageAsync(message);
 
-            //If the message was successful, start a timer to send alternating requestedPinValues to blink the LED
-            if (response.Status == AppServiceResponseStatus.Success)
+
+            if (!relayClient.IsConnected)
             {
-                TestButton.Content = "Success " + DateTime.Now.ToString();
+                await relayClient.Open();
+                if (!relayClient.IsConnected)
+                {
+                    //deferral.Complete();
+                    TestButton.Content = "Bad: Relay Client connection is not open -- " + DateTime.Now.ToString();
+                    return;
+                }
             }
+            await relayClient.SendOwlCommand(c);
         }
+
+        //private async void DoStuffManualConnection()
+        //{
+        //    connection = new AppServiceConnection();
+        //    connection.AppServiceName = "BigOwl.ControllerHubService";
+        //    connection.PackageFamilyName = "BigOwlControllerHubService-uwp_rtvxam156657y";
+        //    AppServiceConnectionStatus status = await connection.OpenAsync();
+
+        //    if (status != AppServiceConnectionStatus.Success)
+        //    {
+        //        //deferral.Complete();
+        //        TestButton.Content = "Bad: " + status.ToString() + " -- " + DateTime.Now.ToString();
+        //        return;
+        //    }
+
+        //    OwlCommand c = new OwlCommand();
+        //    c.Command = OwlCommand.Commands.RandomFull;
+
+        //    var message = new ValueSet();
+        //    message.Add("command", BigOwl.StatusRelay.RelayClient.Serialize<OwlCommand>(c));
+
+        //    AppServiceResponse response = await connection.SendMessageAsync(message);
+
+        //    //If the message was successful, start a timer to send alternating requestedPinValues to blink the LED
+        //    if (response.Status == AppServiceResponseStatus.Success)
+        //    {
+        //        TestButton.Content = "Success " + DateTime.Now.ToString();
+        //    }
+        //}
+
+ 
     }
 }

@@ -1,103 +1,198 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Net.Http;
-using Windows.ApplicationModel.Background;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
+using Windows.ApplicationModel.Background;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 
-// The Background Application template is documented at http://go.microsoft.com/fwlink/?LinkID=533884&clcid=0x409
+//namespace UwpMessageRelay.MessageRelay
+/// <summary>
+/// Used the following as a kickstart for this class
+/// https://github.com/lprichar/UwpMessageRelay
+/// https://blogs.windows.com/buildingapps/2015/09/22/using-cross-app-communication-to-make-apps-work-together-10-by-10/
+/// </summary>
 
 namespace BigOwl.StatusRelayService
 {
     public sealed class StartupTask : IBackgroundTask
     {
-        BackgroundTaskDeferral deferral = null;
-        AppServiceConnection connection;
+        private BackgroundTaskDeferral _backgroundTaskDeferral;
+        private Guid _thisConnectionGuid;
+        private static readonly Dictionary<Guid, AppServiceConnection> Connections = new Dictionary<Guid, AppServiceConnection>();
+        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1);
 
-        public void Run(IBackgroundTaskInstance taskInstance)
+        /// <summary>
+        /// When an AppServiceConnection of type 'UwpMessageRelayService' (as
+        /// defined in Package.appxmanifest) is instantiated and OpenAsync() is called 
+        /// on it, then one of these StartupTask's in instantiated and Run() is called.
+        /// </summary>
+        /// <param name="taskInstance"></param>
+        public async void Run(IBackgroundTaskInstance taskInstance)
         {
-
-            deferral = taskInstance.GetDeferral();
-            taskInstance.Canceled += TaskInstance_Canceled;
-            System.Diagnostics.Debug.WriteLine(Windows.ApplicationModel.Package.Current.Id.FamilyName);
-
-            // 
-            // TODO: Insert code to perform background work
-            //
-            // If you start any asynchronous methods here, prevent the task
-            // from closing prematurely by using BackgroundTaskDeferral as
-            // described in http://aka.ms/backgroundtaskdeferral
-            //
-
-            //Check to determine whether this activation was caused by an incoming app service connection
-            var appServiceTrigger = taskInstance.TriggerDetails as AppServiceTriggerDetails;
-            if (appServiceTrigger != null)
+            try
             {
-                //Verify that the app service connection is requesting the "StatusRelayService" that this class provides
-                if (appServiceTrigger.Name.Equals("StatusRelayService"))
+                // get a service deferral so the service isn't terminated upon completion of Run()
+                _backgroundTaskDeferral = taskInstance.GetDeferral();
+                // save a unique identifier for each connection
+                _thisConnectionGuid = Guid.NewGuid();
+                var triggerDetails = taskInstance.TriggerDetails as AppServiceTriggerDetails;
+                var connection = triggerDetails?.AppServiceConnection;
+                if (connection == null)
                 {
-                    //Store the connection and subscribe to the "RequestRecieved" event to be notified when clients send messages
-                    connection = appServiceTrigger.AppServiceConnection;
-                    connection.RequestReceived += Connection_RequestReceived;
+                    await Error("AppServiceConnection was null, ignorning this request");
+                    _backgroundTaskDeferral.Complete();
+                    return;
                 }
-                else
-                {
-                    deferral.Complete();
-                }
+                // save the guid and connection in a *static* list of all connections
+                Connections.Add(_thisConnectionGuid, connection);
+                await Debug("Connection opened: " + _thisConnectionGuid);
+                taskInstance.Canceled += OnTaskCancelled;
+                // listen for incoming app service requests
+                connection.RequestReceived += ConnectionRequestReceived;
+                connection.ServiceClosed += ConnectionOnServiceClosed;
 
+                //Wanna do something for ap init by trigger?
+                //var appServiceTrigger = taskInstance.TriggerDetails as AppServiceTriggerDetails;
+                //if (appServiceTrigger != null)
+                //{
+                //    //Verify that the app service connection is requesting the "StatusRelayService" that this class provides
+                //    if (appServiceTrigger.Name.Equals("StatusRelayService"))
+                //    {
+                //        //Store the connection and subscribe to the "RequestRecieved" event to be notified when clients send messages
+                //        connection = appServiceTrigger.AppServiceConnection;
+                //        connection.RequestReceived += Connection_RequestReceived;
+                //    }
+                //    else
+                //    {
+                //        deferral.Complete();
+                //    }
+                //}
+            }
+            catch (Exception ex)
+            {
+                await Error("Error in startup " + ex);
             }
         }
-        private void TaskInstance_Canceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
+
+        /// <summary>
+        /// This happens when an app closes its connection normally.
+        /// </summary>
+        private async void OnTaskCancelled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
         {
-            if (deferral != null)
+            await Info("MessageRelay was cancelled, removing " + _thisConnectionGuid + " from the list of active connections.");
+            RemoveConnection(_thisConnectionGuid);
+            if (_backgroundTaskDeferral != null)
             {
-                deferral.Complete();
-                deferral = null;
+                _backgroundTaskDeferral.Complete();
+                _backgroundTaskDeferral = null;
             }
         }
 
-        private void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        private async void ConnectionOnServiceClosed(AppServiceConnection sender, AppServiceClosedEventArgs args)
         {
-            var messageDeferral = args.GetDeferral();
-
-            //The message is provided as a ValueSet (IDictionary<String,Object)
-            //The only message this server understands is with the name "requestedPinValue" and values of "Low" and "High"
-            ValueSet message = args.Request.Message;
-            
-            //string requestedPinValue = (string)message["requestedPinValue"];
-            //if (message.ContainsKey("requestedPinValue"))
-            //{
-
-            //    if (requestedPinValue.Equals("High"))
-            //    {
-            //        pin.Write(GpioPinValue.High);
-            //    }
-            //    else if (requestedPinValue.Equals("Low"))
-            //    {
-            //        pin.Write(GpioPinValue.Low);
-            //    }
-            //    else
-            //    {
-            //        System.Diagnostics.Debug.WriteLine("Reqested pin value is not understood: " + requestedPinValue);
-            //        System.Diagnostics.Debug.WriteLine("Valid values are 'High' and 'Low'");
-            //    }
-            //}
-            //else
-            //{
-            //    System.Diagnostics.Debug.WriteLine("Message not understood");
-            //    System.Diagnostics.Debug.WriteLine("Valid command is: requestedPinValue");
-            //}
-
-            messageDeferral.Complete();
+            await Debug("Connection closed: " + _thisConnectionGuid);
+            RemoveConnection(_thisConnectionGuid);
         }
-        public void Shutdown()
+
+        private async Task Error(string message, Exception ex = null)
         {
-            //Tell everyone to relax and disable their controls
-            //TODO:
-            //When everyone is done, release our soul to the heavens
-            deferral.Complete();
+            await Write("ERROR", message + " - " + ex);
+        }
+
+        private async Task Info(string message)
+        {
+            await Write("INFO", message);
+        }
+
+        private async Task Debug(string message)
+        {
+            //await Write("DEBUG", message);
+        }
+
+        /// <summary>
+        /// Writes logs to the LocalFolder.  On Windows IoT on a Pi this would be like:
+        /// '\User Folders\LocalAppData\UwpMessageRelay.MessageRelay-uwp_1.0.0.0_arm__n7wdzm614gaee\LocalState\MessageRelayLogs'
+        /// On an x86 Windows machine it would be something like:
+        /// C:\Users\[user]\AppData\Local\Packages\UwpMessageRelay.MessageRelay-uwp_n7wdzm614gaee\LocalState\MessageRelayLogs
+        /// </summary>
+        private async Task Write(string level, string message)
+        {
+            var logFolder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("StatusRelayServiceLogs",
+                CreationCollisionOption.OpenIfExists);
+            var messageRelayLogsPath = Path.Combine(logFolder.Path, "StatusRelayServiceLogs.txt");
+            var contents = $"{DateTime.Now} - {level} - {message}{Environment.NewLine}";
+            await Semaphore.WaitAsync();
+            try
+            {
+                File.AppendAllText(messageRelayLogsPath, contents);
+            }
+            finally
+            {
+                Semaphore.Release(1);
+            }
+        }
+
+        private async void ConnectionRequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        {
+            // take out a deferral since we use await
+            var appServiceDeferral = args.GetDeferral();
+            try
+            {
+                await Debug("Request initiated by " + _thisConnectionGuid);
+
+                // .ToList() required since connections may get removed during SendMessage()
+                var otherConnections = Connections
+                    .Where(i => i.Key != _thisConnectionGuid)
+                    .ToList();
+                foreach (var connection in otherConnections)
+                {
+                    await SendMessage(connection, args.Request.Message);
+                }
+            }
+            finally
+            {
+                appServiceDeferral.Complete();
+            }
+        }
+
+        private async Task SendMessage(KeyValuePair<Guid, AppServiceConnection> connection, ValueSet valueSet)
+        {
+            try
+            {
+                var result = await connection.Value.SendMessageAsync(valueSet);
+                if (result.Status == AppServiceResponseStatus.Success)
+                {
+                    await Debug("Successfully sent message to " + connection.Key + ". Result = " + result.Message);
+                    return;
+                }
+                if (result.Status == AppServiceResponseStatus.Failure)
+                {
+                    // When an app with an open connection is terminated and it fails
+                    //      to dispose of its connection, the connection object remains
+                    //      in Connections.  When someone tries to send to it, it gets
+                    //      an AppServiceResponseStatus.Failure response
+                    await Info("Error sending to " + connection.Key + ".  Removing it from the list of active connections.");
+                    RemoveConnection(connection.Key);
+                    return;
+                }
+                await Error("Error sending to " + connection.Key + " - " + result.Status);
+            }
+            catch (Exception ex)
+            {
+                await Error("Error SendMessage to " + connection.Key + " " + ex);
+            }
+        }
+
+        private void RemoveConnection(Guid key)
+        {
+            var connection = Connections[key];
+            connection.Dispose();
+            Connections.Remove(key);
         }
     }
 }
+

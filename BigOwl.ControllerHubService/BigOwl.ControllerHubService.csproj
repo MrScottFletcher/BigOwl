@@ -138,6 +138,10 @@
       <Project>{a72150cf-8f1d-4f4c-9ef3-d0ccc3d2d317}</Project>
       <Name>BigOwl.Entity</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BigOwl.StatusRelay\BigOwl.StatusRelay.csproj">
+      <Project>{abd4301a-cb41-41b5-890d-8146116fc0fc}</Project>
+      <Name>BigOwl.StatusRelay</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">
     <VisualStudioVersion>15.0</VisualStudioVersion>
