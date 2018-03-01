@@ -3,9 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -41,7 +43,7 @@ namespace BigOwl.TestControllerApp
         private void RelayClient_OnMessageReceived(ValueSet obj)
         {
             StringBuilder sb = new StringBuilder();
-            obj.Values.ToList().ForEach(v => sb.AppendLine(v.ToString()));
+            obj.Keys.ToList().ForEach(v => sb.AppendLine(v.ToString()));
             relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " +  sb.ToString();
         }
 
@@ -61,7 +63,8 @@ namespace BigOwl.TestControllerApp
 
         private async void DoStuffOwlClient()
         {
-            relayClient = new StatusRelay.RelayClient();
+            if(relayClient == null)
+                relayClient = new StatusRelay.RelayClient();
 
             OwlCommand c = new OwlCommand();
             c.Command = OwlCommand.Commands.RandomFull;
@@ -69,16 +72,36 @@ namespace BigOwl.TestControllerApp
 
             if (!relayClient.IsConnected)
             {
-                await relayClient.Open();
+                ExceptionDispatchInfo capturedException = null;
+                try
+                {
+                    await relayClient.Open();
+                }
+                catch (Exception ex)
+                {
+                    capturedException = ExceptionDispatchInfo.Capture(ex);
+                }
+
+                string exMessage = String.Empty;
+
+                if (capturedException != null)
+                {
+                    //await ExceptionHandler();
+                    //capturedException.Throw();
+                    exMessage += capturedException.SourceException.ToString();
+                }
+
                 if (!relayClient.IsConnected)
                 {
                     //deferral.Complete();
-                    TestButton.Content = "Bad: Relay Client connection is not open -- " + DateTime.Now.ToString();
+                    TestButton.Content = "Bad: Relay Client connection is not open -- " + DateTime.Now.ToString() + " -- Error: " + exMessage;
                     return;
                 }
             }
+            //if we made it here, do the message
             await relayClient.SendOwlCommand(c);
         }
+
 
         //private async void DoStuffManualConnection()
         //{
@@ -109,6 +132,6 @@ namespace BigOwl.TestControllerApp
         //    }
         //}
 
- 
+
     }
 }

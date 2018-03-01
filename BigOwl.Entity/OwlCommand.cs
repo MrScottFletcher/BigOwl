@@ -21,6 +21,9 @@ namespace BigOwl.Entity
             RandomFull,
             CancelAllAndReset
         }
+        public Guid Id { get; set; }
+        public string SourceAppId { get; set; }
+        public DateTime CreatedDateTime { get; set; }
 
         public Commands Command { get; set; }
         public bool StayAfterComplete { get; set; }

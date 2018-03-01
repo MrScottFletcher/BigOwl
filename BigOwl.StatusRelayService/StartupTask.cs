@@ -110,7 +110,7 @@ namespace BigOwl.StatusRelayService
 
         private async Task Debug(string message)
         {
-            //await Write("DEBUG", message);
+            await Write("DEBUG", message);
         }
 
         /// <summary>

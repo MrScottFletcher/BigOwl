@@ -15,13 +15,15 @@ namespace BigOwl.ControllerHubService
     public sealed class StartupTask : IBackgroundTask
     {
         BackgroundTaskDeferral deferral = null;
-        AppServiceConnection connection;
+        //AppServiceConnection connection;
 
-        public OwlCommandQueue CommandQueue { get; set; }
+        BigOwl.StatusRelay.RelayClient relayClient;
+
+        private static object _lockObj = new object();
+        private static OwlCommandQueue _commandQueue;
 
         public void Run(IBackgroundTaskInstance taskInstance)
         {
-            CommandQueue = new OwlCommandQueue();
 
             string name = Windows.ApplicationModel.Package.Current.Id.FamilyName;
             System.Diagnostics.Debug.WriteLine("FamilyName: " + name);
@@ -30,40 +32,33 @@ namespace BigOwl.ControllerHubService
             taskInstance.Canceled += TaskInstance_Canceled;
             System.Diagnostics.Debug.WriteLine(Windows.ApplicationModel.Package.Current.Id.FamilyName);
 
-            //Check to determine whether this activation was caused by an incoming app service connection
-            var appServiceTrigger = taskInstance.TriggerDetails as AppServiceTriggerDetails;
-            if (appServiceTrigger != null)
-            {
-                //Verify that the app service connection is requesting the "StatusRelayService" that this class provides
-                if (appServiceTrigger.Name.Equals("BigOwl.ControllerHubService"))
-                {
-                    //Store the connection and subscribe to the "RequestRecieved" event to be notified when clients send messages
-                    connection = appServiceTrigger.AppServiceConnection;
-                    connection.RequestReceived += Connection_RequestReceived;
-                }
-                else
-                {
-                    deferral.Complete();
-                }
-
-            }
-        }
-        private void TaskInstance_Canceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
-        {
-            if (deferral != null)
-            {
-                deferral.Complete();
-                deferral = null;
-            }
+            relayClient = new StatusRelay.RelayClient();
+            relayClient.OnMessageReceived += RelayClient_OnMessageReceived;   
+            
+            deferral.Complete();
         }
 
-        private void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        private OwlCommandQueue CommandQueue()
         {
-            var messageDeferral = args.GetDeferral();
+            if(_commandQueue == null)
+            {
+                if(_lockObj == null)
+                {
+                    _lockObj = new object();
+                }
+                lock (_lockObj)
+                {
+                    _commandQueue = new OwlCommandQueue();
+                }
+            }
 
-            //The message is provided as a ValueSet (IDictionary<String,Object)
-            //The only message this server understands is with the name "requestedPinValue" and values of "Low" and "High"
-            ValueSet message = args.Request.Message;
+            return _commandQueue;
+        }
+
+
+        private void RelayClient_OnMessageReceived(ValueSet message)
+        {
+
 
             if (message.ContainsKey("command"))
             {
@@ -73,25 +68,50 @@ namespace BigOwl.ControllerHubService
                 //OwlCommand c = (OwlCommand)message["command"];
                 if (c != null)
                 {
+                    CommandQueue().Add(c);
+
                     System.Diagnostics.Debug.WriteLine("Command: " + c.Command.ToString());
+                    relayClient.SendAck(c.Id.ToString());
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine("Command was null.");
+                    relayClient.SendNack(c.Id.ToString());
                 }
+            }
+            else if (message.ContainsKey("ack"))
+            {
+            }
+            else if (message.ContainsKey("nack"))
+            {
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("There was no command payload.");
+                //was something else.
             }
 
-            messageDeferral.Complete();
+        }
+
+        private void TaskInstance_Canceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
+        {
+            relayClient.SendTerminating();
+            relayClient.CloseConnection();
+
+            if (deferral != null)
+            {
+                deferral.Complete();
+                deferral = null;
+            }
         }
 
         public void Shutdown()
         {
             //Tell everyone to relax and disable their controls
             //TODO:
+
+            relayClient.SendTerminating();
+            relayClient.CloseConnection();
+
             //When everyone is done, release our soul to the heavens
             deferral.Complete();
         }

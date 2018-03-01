@@ -13,7 +13,9 @@ namespace BigOwl.StatusRelay
 {
     public class RelayClient
     {
-        const string AppServiceName = "BigOwl.ControllerHubService";
+        //const string AppServiceName = "BigOwl.StatusRelayService";
+        const string AppServiceName = "BigOwlStatusRelayService";
+
         private AppServiceConnection _connection;
         public event Action<ValueSet> OnMessageReceived;
 
@@ -64,6 +66,33 @@ namespace BigOwl.StatusRelay
             }
 
             return connection;
+        }
+
+        public async void SendTerminating()
+        {
+            SendAppStringMessage(Guid.Empty.ToString(), "terminating");
+        }
+
+        public async void SendHeartbeat()
+        {
+            SendAppStringMessage(Guid.Empty.ToString(), "hb");
+        }
+
+        public async void SendAck(string id)
+        {
+            SendAppStringMessage(id, "ack");
+        }
+
+        public async void SendNack(string id)
+        {
+            SendAppStringMessage(id, "nack");
+        }
+
+        protected async void SendAppStringMessage(string id, string messageType)
+        {
+            string name = Windows.ApplicationModel.Package.Current.Id.FamilyName;
+            string msg = String.Format("{0}|{1}", name, id);
+            await SendMessageAsync(new KeyValuePair<string, object>(messageType, msg));
         }
 
         private void ConnectionOnServiceClosed(AppServiceConnection sender, AppServiceClosedEventArgs args)
