@@ -1,0 +1,15 @@
+﻿<Page
+    x:Class="BigOwl.TestHarnessApp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BigOwl.TestHarnessApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="152,90,0,0" VerticalAlignment="Top" Height="240" Width="505" FontSize="24" Click="TestButton_Click"/>
+        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="162,410,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="443" Width="1188" FontSize="16"/>
+
+    </Grid>
+</Page>

@@ -34,8 +34,9 @@ namespace BigOwl.ControllerHubService
 
             relayClient = new StatusRelay.RelayClient();
             relayClient.OnMessageReceived += RelayClient_OnMessageReceived;   
+            relayClient.Open();
             
-            deferral.Complete();
+            //deferral.Complete();
         }
 
         private OwlCommandQueue CommandQueue()

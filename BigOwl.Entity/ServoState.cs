@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace BigOwl.Entity
 {
     //[Serializable]
-    public class ServoState
+    public class ServoState : OwlDeviceStateBase
     {
+
     }
 }

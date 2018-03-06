@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -44,7 +45,16 @@ namespace BigOwl.TestControllerApp
         {
             StringBuilder sb = new StringBuilder();
             obj.Keys.ToList().ForEach(v => sb.AppendLine(v.ToString()));
-            relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " +  sb.ToString();
+            var ignored = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                // Do something on the dispatcher thread
+                relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " +  sb.ToString();
+            });
+
+            //Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            //{
+            //    relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " + sb.ToString();
+            //});
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)

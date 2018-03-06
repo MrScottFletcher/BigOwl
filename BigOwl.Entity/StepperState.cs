@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace BigOwl.Entity
 {
-    class StepperState
+    public class StepperState : OwlDeviceStateBase
     {
+
     }
 }
