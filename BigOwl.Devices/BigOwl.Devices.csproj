@@ -106,7 +106,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ControllerBase.cs" />
+    <Compile Include="OwlControllerBase.cs" />
     <Compile Include="EasyStepperDriver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServoDriver.cs" />

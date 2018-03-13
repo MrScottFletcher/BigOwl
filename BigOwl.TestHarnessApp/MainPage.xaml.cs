@@ -24,25 +24,20 @@ namespace BigOwl.TestHarnessApp
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private StepperControl.StepperController _head;
-        private StepperControl.StepperController _wings;
-        private PwmControl.PwmController _leftEye;
-        private PwmControl.PwmController _rightEye;
+        private OwlMasterController.Owl _owl;
 
         public MainPage()
         {
             this.InitializeComponent();
 
-            _head = new StepperControl.StepperController(19,26,13,6,5,21,true);
+            _owl.DeviceError += _component_DeviceError;
+            _owl.MoveCompleted += _component_MoveCompleted;
 
-            _head.DeviceError += _head_DeviceError;
-            _head.MoveCompleted += _head_MoveCompleted;
-
-            _head.Initialize();
+            _owl.Initialize();
 
         }
 
-        private void _head_MoveCompleted(object sender)
+        private void _component_MoveCompleted(object sender)
         {
             var ignored = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
@@ -51,7 +46,7 @@ namespace BigOwl.TestHarnessApp
             });
         }
 
-        private void _head_DeviceError(object sender, string error)
+        private void _component_DeviceError(object sender, string error)
         {
             var ignored = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
@@ -68,12 +63,39 @@ namespace BigOwl.TestHarnessApp
                 statusLabel.Text = DateTime.Now.ToString() + " -- TestButton_Click START";
             });
 
-            _head.Recalibrate();
+            _owl.Recalibrate();
 
             var ignored2 = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 // Do something on the dispatcher thread
                 statusLabel.Text = DateTime.Now.ToString() + " -- TestButton_Finished";
+            });
+        }
+
+        private void DoThingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var ignored = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                // Do something on the dispatcher thread
+                statusLabel.Text = DateTime.Now.ToString() + " -- DoThingsButton_Click START";
+            });
+
+            BigOwl.Entity.StepperState state = new Entity.StepperState();
+
+            List<int> positions = new List<int>();
+
+            positions.Add(0);
+            positions.Add(100);
+            positions.Add(50);
+            positions.Add(75);
+            positions.Add(25);
+
+            _owl.DoPositionList(positions, 1, true);
+
+            var ignored2 = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                // Do something on the dispatcher thread
+                statusLabel.Text = DateTime.Now.ToString() + " -- DoThingsButton_Click FINISHED";
             });
         }
     }

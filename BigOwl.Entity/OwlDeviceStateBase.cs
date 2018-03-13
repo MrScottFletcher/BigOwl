@@ -12,6 +12,15 @@ namespace BigOwl.Entity
         {
             InError = -1,
             Unknown,
+            Ready,
+            Busy,
+            Unavailable,
+        }
+
+        public enum StatusReasonTypes
+        {
+            InError = -1,
+            Unknown,
             Initializing,
             Calibrating,
             GoingHome,
@@ -25,7 +34,7 @@ namespace BigOwl.Entity
         public string ControllerType { get; set; }
         public DateTime InitializedDateTime { get; set; }
         public string LastError { get; set; }
-        public StatusTypes Status { get; set; }
+        public StatusReasonTypes StatusReason { get; set; }
 
         public int CurrentPosition { get; set; }
         public bool MaxLimitDetected { get; set; }

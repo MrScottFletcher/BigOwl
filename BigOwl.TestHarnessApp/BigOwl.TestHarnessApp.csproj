@@ -140,6 +140,10 @@
       <Project>{a72150cf-8f1d-4f4c-9ef3-d0ccc3d2d317}</Project>
       <Name>BigOwl.Entity</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BigOwl.OwlMasterController\BigOwl.OwlMasterController.csproj">
+      <Project>{34133633-2468-4de5-95fc-6e9164e55c4b}</Project>
+      <Name>BigOwl.OwlMasterController</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BigOwl.PwmControl\BigOwl.PwmControl.csproj">
       <Project>{bbf27358-fc02-466e-bdb6-bc3ac7193911}</Project>
       <Name>BigOwl.PwmControl</Name>

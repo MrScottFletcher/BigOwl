@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{57A1FFA6-3C73-407E-A1DC-5A51DFC687CD}</ProjectGuid>
+    <ProjectGuid>{34133633-2468-4DE5-95FC-6E9164E55C4B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BigOwl.StepperControl</RootNamespace>
-    <AssemblyName>BigOwl.StepperControl</AssemblyName>
+    <RootNamespace>BigOwl.OwlMasterController</RootNamespace>
+    <AssemblyName>BigOwl.OwlMasterController</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.16299.0</TargetPlatformVersion>
@@ -106,19 +106,14 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="OwlStepperController.cs" />
+    <Compile Include="Owl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Properties\BigOwl.StepperControl.rd.xml" />
+    <EmbeddedResource Include="Properties\BigOwl.OwlMasterController.rd.xml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.1</Version>
+      <Version>6.0.6</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <SDKReference Include="WindowsIoT, Version=10.0.16299.0">
-      <Name>Windows IoT Extensions for the UWP</Name>
-    </SDKReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BigOwl.Devices\BigOwl.Devices.csproj">
@@ -128,6 +123,18 @@
     <ProjectReference Include="..\BigOwl.Entity\BigOwl.Entity.csproj">
       <Project>{a72150cf-8f1d-4f4c-9ef3-d0ccc3d2d317}</Project>
       <Name>BigOwl.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BigOwl.PwmControl\BigOwl.PwmControl.csproj">
+      <Project>{bbf27358-fc02-466e-bdb6-bc3ac7193911}</Project>
+      <Name>BigOwl.PwmControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BigOwl.StepperControl\BigOwl.StepperControl.csproj">
+      <Project>{57a1ffa6-3c73-407e-a1dc-5a51dfc687cd}</Project>
+      <Name>BigOwl.StepperControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BigOwl.ThermalMonitor\BigOwl.ThermalMonitor.csproj">
+      <Project>{bb0ca982-f29c-4517-a192-2b9c05b7e363}</Project>
+      <Name>BigOwl.ThermalMonitor</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

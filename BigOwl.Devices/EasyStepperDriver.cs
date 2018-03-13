@@ -244,7 +244,7 @@ namespace BigOwl.Devices
             _Steps = steps; _StepDelay = stepdelay;
             await ChangeStepMode(_StepMode);
             await ChangeDirection(_StepDirection);
-            for (UInt32 i = 0; i < _Steps; i++)
+            for (Int32 i = 0; i < _Steps; i++)
             {
                 _StepPin.Write(GpioPinValue.High);
                 await Task.Delay(_StepDelay);
@@ -264,7 +264,7 @@ namespace BigOwl.Devices
             _StepMode = mode; _StepDirection = direction; _StepDelay = stepdelay; _Steps = steps;
             await ChangeStepMode(mode);
             await ChangeDirection(direction);
-            for (UInt32 i = 0; i < _Steps; i++)
+            for (Int32 i = 0; i < _Steps; i++)
             {
                 _StepPin.Write(GpioPinValue.High);
                 await Task.Delay(_StepDelay);

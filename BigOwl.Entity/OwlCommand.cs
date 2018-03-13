@@ -19,7 +19,9 @@ namespace BigOwl.Entity
             RandomShort,
             RandomLong,
             RandomFull,
-            CancelAllAndReset
+            CancelAllAndReset,
+            Recalibrate,
+            ApplyState
         }
         public Guid Id { get; set; }
         public string SourceAppId { get; set; }
