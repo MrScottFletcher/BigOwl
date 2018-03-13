@@ -8,8 +8,15 @@ using System.Threading.Tasks;
 
 namespace BigOwl.PwmControl
 {
-    public class PwmController : OwlControllerBase
+
+    //Wrap the underlying PCA9685 board
+    public class OwlPwmController : OwlControllerBase
     {
+        public override bool Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
         public override void ApplyState(OwlDeviceStateBase state)
         {
             throw new NotImplementedException();
@@ -50,10 +57,6 @@ namespace BigOwl.PwmControl
             throw new NotImplementedException();
         }
 
-        public override bool Initialize()
-        {
-            throw new NotImplementedException();
-        }
 
         public override void Recalibrate()
         {

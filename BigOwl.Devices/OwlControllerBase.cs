@@ -26,6 +26,9 @@ namespace BigOwl.Devices
         public int? MaxPosition { get; set; }
         public int? HomePosition { get; set; }
 
+        public int? ForwardLimitSensorPin { get; set; }
+        public int? BackwardsLimitSensorPin { get; set; }
+
         public abstract bool Initialize();
         public abstract bool Enable();
         public abstract bool Disable();
@@ -40,12 +43,25 @@ namespace BigOwl.Devices
         public abstract void DoPositionList(List<int> positions, int msDelayBetween, bool returnToHome);
         public abstract void GotoPosition(int position);
 
+        public delegate void ForwardLimitReachedHandler(object sender);
+        public delegate void BackwardLimitReachedHandler(object sender);
         public delegate void MoveCompletedHandler(object sender);
         public delegate void DeviceErrorHandler(object sender, string error);
 
+        public event ForwardLimitReachedHandler ForwardLimitReached;
+        public event BackwardLimitReachedHandler BackwardLimitReached;
         public event MoveCompletedHandler MoveCompleted;
         public event DeviceErrorHandler DeviceError;
 
+        protected void FireForwardLimitReached()
+        {
+            ForwardLimitReached?.Invoke(this);
+        }
+
+        protected void FireBackwardLimitReached()
+        {
+            BackwardLimitReached?.Invoke(this);
+        }
 
         protected void FireMoveCompleted()
         {

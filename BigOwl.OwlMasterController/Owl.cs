@@ -17,8 +17,8 @@ namespace BigOwl.OwlMasterController
         private StepperControl.OwlStepperController _head;
         private StepperControl.OwlStepperController _wings;
 
-        private PwmControl.PwmController _leftEye;
-        private PwmControl.PwmController _rightEye;
+        private PwmControl.OwlPwmController _leftEye;
+        private PwmControl.OwlPwmController _rightEye;
 
         public Owl()
         {
