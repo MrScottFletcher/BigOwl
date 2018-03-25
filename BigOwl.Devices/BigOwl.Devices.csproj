@@ -106,19 +106,22 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Adafruit\I2CBase.cs" />
+    <Compile Include="Adafruit\InterfaceAddresses.cs" />
+    <Compile Include="Adafruit\PCA9685.cs" />
+    <Compile Include="Adafruit\PWMBreakout.cs" />
     <Compile Include="OwlControllerBase.cs" />
     <Compile Include="EasyStepperDriver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServoDriver.cs" />
+    <Compile Include="ServoBoardDriver3.cs" />
+    <Compile Include="ServoBoardDriver2.cs" />
+    <Compile Include="ServoBoardDriver.cs" />
     <Compile Include="Uln2003Driver.cs" />
     <EmbeddedResource Include="Properties\BigOwl.Devices.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AdafruitClassLibrary">
-      <Version>1.0.7.1</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.1</Version>
+      <Version>6.0.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +135,7 @@
       <Name>BigOwl.Entity</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

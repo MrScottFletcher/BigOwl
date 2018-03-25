@@ -74,15 +74,18 @@ namespace BigOwl.Entity
                 if (_commandList.Count > 0)
                 {
                     next = _commandList.First();
-                    _lock.EnterWriteLock();
-                    try
+                    if (remove)
                     {
-                        _commandList.Remove(next);
-                    }
-                    finally
-                    {
-                        if (_lock.IsWriteLockHeld)
-                            _lock.ExitWriteLock();
+                        _lock.EnterWriteLock();
+                        try
+                        {
+                            _commandList.Remove(next);
+                        }
+                        finally
+                        {
+                            if (_lock.IsWriteLockHeld)
+                                _lock.ExitWriteLock();
+                        }
                     }
                 }
             }

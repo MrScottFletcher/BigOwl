@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Devices.Gpio;
 
 namespace BigOwl.StepperControl
 {
@@ -23,16 +24,16 @@ namespace BigOwl.StepperControl
         public bool isTwoStepMode { get; set; }
 
         object lockObj = new object();
-        
+
         public EasyStepperDriver Driver
         {
             get
             {
-                if(_driver == null)
+                if (_driver == null)
                 {
                     lock (lockObj)
                     {
-                        if(_driver == null)
+                        if (_driver == null)
                         {
                             _driver = new EasyStepperDriver(DirectionPin, StepPin, StepModePinOne, StepModePinTwo, SleepPin, EnablePin, isTwoStepMode);
                         }
@@ -44,7 +45,7 @@ namespace BigOwl.StepperControl
 
         public bool MovesCancelled { get; private set; }
 
-        public OwlStepperController() : base()
+        public OwlStepperController(decimal stepsToPositionFactor) : base(stepsToPositionFactor)
         {
             //do anything PRIOR to having pins set
             State = new StepperState();
@@ -52,8 +53,9 @@ namespace BigOwl.StepperControl
 
         }
 
-        public OwlStepperController(int directionPin, int stepPin, int stepModePinOne, int stepModePinTwo, int sleepPin, int enablePin, bool bTwoStepMode) : this()
+        public OwlStepperController(string name, int directionPin, int stepPin, int stepModePinOne, int stepModePinTwo, int sleepPin, int enablePin, int? forwardLimitSensorPin, int? backwardsLimitSensorPin, int stepsToPositionFactor, bool bTwoStepMode) : this(stepsToPositionFactor)
         {
+            Name = name;
             DirectionPin = directionPin;
             StepPin = stepPin;
             StepModePinOne = stepModePinOne;
@@ -61,6 +63,29 @@ namespace BigOwl.StepperControl
             SleepPin = sleepPin;
             EnablePin = enablePin;
             isTwoStepMode = bTwoStepMode;
+            ForwardLimitPinNumber = forwardLimitSensorPin;
+            BackwardsLimitPinNumber = backwardsLimitSensorPin;
+
+            InitSubscribeToLimitPinEvents();
+        }
+
+        protected override void InitSubscribeToLimitPinEvents()
+        {
+            base.InitSubscribeToLimitPinEvents();
+
+            //also subscribe to set the driver stops
+            this.ForwardLimitSensorChanged += OwlStepperController_ForwardLimitSensorChanged;
+            this.BackwardLimitSensorChanged += OwlStepperController_BackwardLimitSensorChanged;
+        }
+
+        private void OwlStepperController_BackwardLimitSensorChanged(object sender)
+        {
+            this.Driver.BackwardBlocked = this.IsBackwardLimitReached().GetValueOrDefault();
+        }
+
+        private void OwlStepperController_ForwardLimitSensorChanged(object sender)
+        {
+            this.Driver.ForwardBlocked = this.IsForwardLimitReached().GetValueOrDefault();
         }
 
         public override bool Initialize()
@@ -71,7 +96,7 @@ namespace BigOwl.StepperControl
                 bOK = Driver.DisableOutputs();
                 State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Sleeping;
             }
-            catch(Exception exAny)
+            catch (Exception exAny)
             {
                 LastError = exAny.ToString();
                 FireDeviceError(exAny.Message);
@@ -85,7 +110,7 @@ namespace BigOwl.StepperControl
             bool bOK = false;
             try
             {
-                if(!Driver.IsOutputsEnable)
+                if (!Driver.IsOutputsEnable)
                     bOK = Driver.EnableOutputs();
                 if (Driver.IsDriverSleep)
                     bOK = Driver.WakeUp();
@@ -156,7 +181,7 @@ namespace BigOwl.StepperControl
                     p = MinPosition.Value;
 
                 int positionDiff = p - CurrentPosition.Value;
-                int stepsDiff = Convert.ToInt32(Convert.ToDecimal(positionDiff) * StepToPositionFactor.Value);
+                int stepsDiff = Convert.ToInt32(Convert.ToDecimal(positionDiff) * StepsToPositionFactor);
                 if (stepsDiff < 0)
                 {
                     dir = EasyStepperDriver.Direction.Backward;
@@ -196,7 +221,7 @@ namespace BigOwl.StepperControl
         private bool VerifyInitialized()
         {
             bool bOK = true;
-            if (!StepToPositionFactor.HasValue)
+            if (StepsToPositionFactor == 0)
             {
                 this.FireDeviceError("StepToPositionFactor is not initialized");
                 bOK = false;
@@ -222,7 +247,91 @@ namespace BigOwl.StepperControl
 
         public override void Recalibrate()
         {
+            this.Status = OwlDeviceStateBase.StatusTypes.Unavailable;
             State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Calibrating;
+            CurrentPosition = null;
+            EasyStepperDriver.Direction directionForCalibration = EasyStepperDriver.Direction.Forward;
+
+            //check the actual Gpio pins, not just the pin numbers.
+            if (ForwardLimitSensorGpioPin == null && BackwardsLimitSensorGpioPin == null)
+            {
+                //can't calibrate anything.  Disable me.
+                this.Status = OwlDeviceStateBase.StatusTypes.InError;
+                this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.InError;
+                this.FireDeviceError("Cannot calibrate.  No limit sensors found");
+            }
+            else
+            {
+                //do we calibrate forwards or backwards or both?
+
+                bool isDirectLimitReachedAlready = false;
+                if (ForwardLimitSensorGpioPin != null)
+                {
+                    if (IsForwardLimitReached().HasValue)
+                    {
+                        isDirectLimitReachedAlready = IsForwardLimitReached().Value;
+                    }
+                    else
+                    {
+                        //Expected to be able to 
+                        this.Status = OwlDeviceStateBase.StatusTypes.InError;
+                        this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.InError;
+                        this.FireDeviceError("Cannot calibrate.  Expected Forward limit sensor to return a non-null value.");
+                    }
+                }
+                else if (BackwardsLimitSensorGpioPin != null)
+                {
+                    directionForCalibration = EasyStepperDriver.Direction.Backward;
+                    if (IsBackwardLimitReached().HasValue)
+                    {
+                        isDirectLimitReachedAlready = IsBackwardLimitReached().Value;
+                    }
+                    else
+                    {
+                        //Expected to be able to 
+                        this.Status = OwlDeviceStateBase.StatusTypes.InError;
+                        this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.InError;
+                        this.FireDeviceError("Cannot calibrate.  Expected Backwards limit sensor to return a non-null value (and there was no Forward limit sensor).");
+                    }
+                }
+            }
+
+            if (this.Status != OwlDeviceStateBase.StatusTypes.InError)
+            {
+                bool limitHit = false;
+                //Do the walk until we hit
+                limitHit = (directionForCalibration == EasyStepperDriver.Direction.Forward) ? IsForwardLimitReached().Value : IsBackwardLimitReached().Value;
+                int currentStep = 0;
+                int stepToIncrement = 2;
+
+                this.Driver.WakeUp();
+                this.Driver.EnableOutputs();
+                this.Driver.StepMode = EasyStepperDriver.Mode.Full;
+
+                while (!limitHit && currentStep < StepsInRangeOfMotion)
+                {
+                    //Step forward 2 steps
+
+                    this.Driver.StepDirection = directionForCalibration;
+                    Task.Run(async () => { await this.Driver.Turn(Convert.ToUInt32(stepToIncrement), 1); }).Wait();
+
+                    currentStep += stepToIncrement;
+
+                    //Task t = this.Driver.Turn(Convert.ToUInt32(stepsDiff), 1);
+                    //t.Wait();
+
+                    limitHit = (directionForCalibration == EasyStepperDriver.Direction.Forward) ? IsForwardLimitReached().Value : IsBackwardLimitReached().Value;
+                }
+                this.Driver.DisableOutputs();
+                this.Driver.Sleep();
+
+                if (limitHit)
+                {
+                    //This sets the already-known scale.  It does not auto-scale yet
+                    this.CurrentPosition = (directionForCalibration == EasyStepperDriver.Direction.Forward) ? 100 : 0;
+                }
+            }
+
 
             //Do the limit test here.
             GotoPosition(0);
@@ -285,6 +394,6 @@ namespace BigOwl.StepperControl
             FireMoveCompleted();
             return bOK;
         }
-        
+
     }
 }

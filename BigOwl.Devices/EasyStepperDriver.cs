@@ -122,6 +122,9 @@ namespace BigOwl.Devices
             }
         }
 
+        public bool ForwardBlocked { get; set; }
+        public bool BackwardBlocked { get; set; }
+
         #endregion properties
 
         #region Constructors
@@ -249,7 +252,25 @@ namespace BigOwl.Devices
                 _StepPin.Write(GpioPinValue.High);
                 await Task.Delay(_StepDelay);
                 _StepPin.Write(GpioPinValue.Low);
+
+                if (!ContinueDirection(_StepDirection))
+                    break;
             }
+        }
+
+        private bool ContinueDirection(Direction stepDirection)
+        {
+            bool ok = true;
+            switch (stepDirection)
+            {
+                case Direction.Forward:
+                    ok = !ForwardBlocked;
+                    break;
+                case Direction.Backward:
+                    ok = !BackwardBlocked;
+                    break;
+            }
+            return ok;
         }
 
         /// <summary>

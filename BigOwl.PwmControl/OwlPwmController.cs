@@ -12,6 +12,11 @@ namespace BigOwl.PwmControl
     //Wrap the underlying PCA9685 board
     public class OwlPwmController : OwlControllerBase
     {
+
+        public OwlPwmController(decimal stepToPositionFactor): base(stepToPositionFactor) 
+        {
+        }
+
         public override bool Initialize()
         {
             throw new NotImplementedException();

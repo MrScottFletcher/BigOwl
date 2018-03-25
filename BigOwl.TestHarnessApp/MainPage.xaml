@@ -8,9 +8,18 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button x:Name="TestButton" Content="Calibrate" HorizontalAlignment="Left" Margin="152,90,0,0" VerticalAlignment="Top" Height="181" Width="396" FontSize="24" Click="TestButton_Click"/>
-        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="162,410,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="443" Width="1188" FontSize="16"/>
-        <Button x:Name="DoThingsButton" Content="Do Things" HorizontalAlignment="Left" Margin="586,92,0,0" VerticalAlignment="Top" Height="182" Width="337" FontSize="36" Click="DoThingsButton_Click"/>
+        <Button x:Name="TestButton" Content="Calibrate ALL" HorizontalAlignment="Left" Margin="82,41,0,0" VerticalAlignment="Top" Height="93" Width="396" FontSize="48" Click="TestButton_Click"/>
+        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="82,595,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="348" Width="1348" FontSize="36"/>
+        <Button x:Name="DoThingsButton" Content="Do Things" HorizontalAlignment="Left" Margin="577,48,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" Click="DoThingsButton_Click" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto">
+            <Button.RenderTransform>
+                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+            </Button.RenderTransform>
+        </Button>
+        <Ellipse x:Name="statusLight" HorizontalAlignment="Left" Height="182" Margin="1118,92,0,0" VerticalAlignment="Top" Width="182" FocusVisualPrimaryBrush="Black" Fill="Black"/>
+        <Button x:Name="CalibrateHeadButton" Content="Calibrate HEAD" HorizontalAlignment="Left" Margin="82,160,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateHeadButton_Click"/>
+        <Button x:Name="CalibrateWingsButton" Content="Calibrate WINGS" HorizontalAlignment="Left" Margin="82,269,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateWingsButton_Click"/>
+        <Button x:Name="CalibrateLEFTEyeButton" Content="Calibrate LEFT EYE" HorizontalAlignment="Left" Margin="82,376,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateLEFTEyeButton_Click"/>
+        <Button x:Name="CalibrateRIGHTEyeButton_Copy1" Content="Calibrate RIGHT EYE" HorizontalAlignment="Left" Margin="82,483,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateRIGHTEyeButton_Copy1_Click"/>
 
     </Grid>
 </Page>
