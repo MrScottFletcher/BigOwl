@@ -21,14 +21,16 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
+        <uap:Extension Category="windows.appService" EntryPoint="BigOwl.StatusRelayService.StartupTask">
+          <uap:AppService Name="BigOwl.StatusRelayService" />
+        </uap:Extension>
         <Extension Category="windows.backgroundTasks" EntryPoint="BigOwl.StatusRelayService.StartupTask">
           <BackgroundTasks>
+            <Task Type="general" />
+            <Task Type="pushNotification" />
             <iot:Task Type="startup" />
           </BackgroundTasks>
         </Extension>
-        <uap:Extension Category="windows.appService" EntryPoint="BigOwl.StatusRelayService.StartupTask">
-          <uap:AppService Name="BigOwlStatusRelayService" />
-        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,6 +23,9 @@ namespace BigOwl.TestControllerApp
     /// </summary>
     sealed partial class App : Application
     {
+
+        private readonly BigOwl.StatusRelay.RelayClient relayClient = StatusRelay.RelayClient.Instance;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -30,6 +34,30 @@ namespace BigOwl.TestControllerApp
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.LeavingBackground += App_LeavingBackground;
+            this.UnhandledException += App_UnhandledException;
+
+        }
+
+        private async void App_LeavingBackground(object sender, LeavingBackgroundEventArgs e)
+        {
+            try
+            {
+                await relayClient.Open();
+            }
+            catch (Exception ex)
+            {
+                // failing quietly is probably ok for now since the connection will
+                //  attempt to re-open itself again on next send.  It just means
+                //  we won't be able to receive messages
+                Debug.WriteLine("Error opening connection on startup" + ex);
+            }
+
+        }
+
+        private void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            throw new Exception("UNHANDLED: " + e.ToString());
         }
 
         /// <summary>
@@ -94,6 +122,7 @@ namespace BigOwl.TestControllerApp
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
+            relayClient.CloseConnection();
             deferral.Complete();
         }
     }

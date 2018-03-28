@@ -8,8 +8,19 @@ namespace BigOwl.Entity
 {
     public class OwlCommandQueue
     {
+
         System.Threading.ReaderWriterLockSlim _lock;
         private List<OwlCommand> _commandList;
+
+        public delegate void QueueChangedHandler(object sender);
+        public delegate void QueueEmptyHandler(object sender);
+        public delegate void CommandAddedHandler(object sender, OwlCommand command);
+
+        public event QueueChangedHandler QueueChanged;
+        public event QueueEmptyHandler QueueEmpty;
+        public event CommandAddedHandler CommandAdded;
+
+        public static OwlCommandQueue Instance { get; } = new OwlCommandQueue();
 
         public OwlCommandQueue()
         {
@@ -36,6 +47,8 @@ namespace BigOwl.Entity
                         _commandList.Insert(0, c);
                     else
                         _commandList.Add(c);
+
+                    FireCommandAddedEvent(c);
                 }
                 finally
                 {
@@ -54,6 +67,21 @@ namespace BigOwl.Entity
                     _lock.ExitUpgradeableReadLock();
             }
         }
+
+        //------------------
+        private void FireCommandAddedEvent(OwlCommand c)
+        {
+            CommandAdded?.Invoke(this, c);
+        }
+        private void FireQueueChangedEvent()
+        {
+            QueueChanged?.Invoke(this);
+        }
+        private void FireQueueEmptyEvent()
+        {
+            QueueEmpty?.Invoke(this);
+        }
+        //------------------
 
         public OwlCommand GetNext()
         {
@@ -80,6 +108,10 @@ namespace BigOwl.Entity
                         try
                         {
                             _commandList.Remove(next);
+                            FireQueueChangedEvent();
+
+                            if (_commandList.Count == 0)
+                                FireQueueEmptyEvent();
                         }
                         finally
                         {
@@ -115,6 +147,13 @@ namespace BigOwl.Entity
             try
             {
                 countRemoved = _commandList.RemoveAll(x => x.Id == id);
+
+                FireQueueChangedEvent();
+
+                if (_commandList.Count == 0)
+                {
+                    FireQueueEmptyEvent();
+                }
             }
             catch (Exception exAny)
             {
@@ -129,6 +168,8 @@ namespace BigOwl.Entity
             return countRemoved;
         }
 
+
+
         public int RemoveAllForSource(string sourceAppId)
         {
             int countRemoved = 0;
@@ -136,6 +177,7 @@ namespace BigOwl.Entity
             try
             {
                 countRemoved = _commandList.RemoveAll(x => x.SourceAppId == sourceAppId);
+                FireQueueChangedEvent();
             }
             catch (Exception exAny)
             {

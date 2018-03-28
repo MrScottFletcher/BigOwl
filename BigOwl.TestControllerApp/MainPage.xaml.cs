@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -31,30 +32,26 @@ namespace BigOwl.TestControllerApp
     {
         //AppServiceConnection connection;
 
-        BigOwl.StatusRelay.RelayClient relayClient;
+        private static BigOwl.StatusRelay.RelayClient relayClient = StatusRelay.RelayClient.Instance;
 
 
         public MainPage()
         {
             this.InitializeComponent();
-            relayClient = new StatusRelay.RelayClient();
             relayClient.OnMessageReceived += RelayClient_OnMessageReceived;
         }
 
-        private void RelayClient_OnMessageReceived(ValueSet obj)
+        private async void RelayClient_OnMessageReceived(ValueSet obj)
         {
             StringBuilder sb = new StringBuilder();
             obj.Keys.ToList().ForEach(v => sb.AppendLine(v.ToString()));
-            var ignored = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 // Do something on the dispatcher thread
-                relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " +  sb.ToString();
+                relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " + sb.ToString();
             });
 
-            //Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            //{
-            //    relayMessageTextBlock.Text = DateTime.Now.ToString() + " --  " + sb.ToString();
-            //});
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
@@ -73,7 +70,7 @@ namespace BigOwl.TestControllerApp
 
         private async void DoStuffOwlClient()
         {
-            if(relayClient == null)
+            if (relayClient == null)
                 relayClient = new StatusRelay.RelayClient();
 
             OwlCommand c = new OwlCommand();
@@ -109,7 +106,167 @@ namespace BigOwl.TestControllerApp
                 }
             }
             //if we made it here, do the message
-            await relayClient.SendOwlCommand(c);
+            await relayClient.SendOwlCommandAsync(c);
+        }
+
+        private async void WinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("WinkButton_Click Start");
+            RunEyeTest();
+            SetStatusLabel("WinkButton_Click FINISHED");
+        }
+
+        private async void WiggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("WiggleButton_Click Start");
+            await RunWiggleTest();
+            SetStatusLabel("WiggleButton_Click FINISHED");
+        }
+
+        private async void HeadLeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("HeadLeftButton_Click Start");
+            await RunHeadLeftTest();
+            SetStatusLabel("HeadLeftButton_Click FINISHED");
+        }
+
+
+        private async void HeadRightButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("HeadRightButton_Click Start");
+            await RunHeadRightTest();
+            SetStatusLabel("HeadRightButton_Click FINISHED");
+        }
+
+        private async void WingFlapButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("WingFlapButton_Click Start");
+            await RunWingFlapTest();
+            SetStatusLabel("WingFlapButton_Click FINISHED");
+        }
+
+        private async void CalibrateAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("CalibrateAllButton_Click Start");
+            await RunCalibrationTest();
+            SetStatusLabel("CalibrateAllButton_Click FINISHED");
+        }
+
+        private async Task SetStatusLabel(string msg)
+        {
+            await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            {
+                // Do something on the dispatcher thread
+                statusLabel.Text = DateTime.Now.ToString() + " -- " + msg;
+                await BlinkStatusLight();
+            });
+        }
+
+
+        private async Task RunCalibrationTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.Recalibrate;
+            await SendCommand(c);
+        }
+
+
+        private async Task RunEyeTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.Wink;
+            await SendCommand(c);
+        }
+
+        private async Task RunWiggleTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.SmallWiggle;
+            await SendCommand(c);
+        }
+
+        private async Task RunHeadLeftTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.HeadLeft;
+            await SendCommand(c);
+        }
+
+        private async Task RunHeadRightTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.HeadRight;
+            await SendCommand(c);
+        }
+
+        private async Task RunWingFlapTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.Flap;
+            await SendCommand(c);
+        }
+
+        private async Task BlinkStatusLight()
+        {
+            SetStatusLight(Colors.Red);
+            await Task.Delay(500);
+            SetStatusLight(Colors.Green);
+        }
+
+        private async void SetStatusLight(Color c)
+        {
+            this.statusLight.Fill = new SolidColorBrush(c);
+        }
+
+        private void CalibrateHeadButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException("Individual part calibration is not supported.");
+            CalibratePart("Head");
+        }
+
+        private void CalibrateWingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException("Individual part calibration is not supported.");
+            CalibratePart("Wings");
+        }
+
+        private void CalibrateLEFTEyeButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException("Individual part calibration is not supported.");
+            CalibratePart("Left eye");
+        }
+
+        private void CalibrateRIGHTEyeButton_Copy1_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException("Individual part calibration is not supported.");
+            CalibratePart("Right eye");
+        }
+
+        private void CalibratePart(string partName)
+        {
+            throw new NotImplementedException("Individual part calibration is not supported.");
+            //var ignored2 = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            //    OwlControllerBase part = _owl.PartsList.Find(p => p.Name.ToLower() == partName.ToLower());
+            //    if (part != null)
+            //        part.Recalibrate();
+            //    else
+            //    {
+            //        SetStatusLabel("Error calibrating " + partName + " - part not found.");
+            //    }
+            //});
+        }
+
+        private async Task SendCommand(OwlCommand c)
+        {
+
+            if (!relayClient.IsConnected)
+            {
+                //deferral.Complete();
+                TestButton.Content = "Bad: Relay Client connection is not open -- " + DateTime.Now.ToString();
+                return;
+            }
+
+            await relayClient.SendOwlCommandAsync(c);
         }
 
 

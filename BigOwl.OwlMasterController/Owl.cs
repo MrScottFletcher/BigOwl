@@ -17,9 +17,6 @@ namespace BigOwl.OwlMasterController
         private StepperControl.OwlStepperController _head;
         private StepperControl.OwlStepperController _wings;
 
-        //private PwmControl.OwlPwmController _leftEye;
-        //private PwmControl.OwlPwmController _rightEye;
-
         private ServoBoardDriver _pwmDriver;
         private ServoBoardDriver.ServoPort _leftEye;
         private ServoBoardDriver.ServoPort _rightEye;
@@ -213,59 +210,80 @@ namespace BigOwl.OwlMasterController
         private void DoWink()
         {
             _rightEye.GotoPosition(50);
+            Task.Delay(1500).Wait();
             _rightEye.GotoPosition(0);
-            _rightEye.GotoPosition(50);
-            _rightEye.GotoPosition(0);
-            _rightEye.GotoPosition(50);
-            _rightEye.GotoPosition(0);
-
-            _leftEye.GotoPosition(50);
-            _leftEye.GotoPosition(0);
-            _leftEye.GotoPosition(50);
-            _leftEye.GotoPosition(0);
-            _leftEye.GotoPosition(50);
-            _leftEye.GotoPosition(0);
 
         }
 
         private void DoSmallWiggle()
         {
-            throw new NotImplementedException();
+            _leftEye.GotoPosition(20);
+            _rightEye.GotoPosition(20);
+            _head.GotoPosition(60);
+            _wings.GotoPosition(95);
+            Task.Delay(200).Wait();
+
+            _leftEye.GotoPosition(0);
+            _rightEye.GotoPosition(0);
+            _head.GotoPosition(40);
+            Task.Delay(200).Wait();
+
+            _leftEye.GotoPosition(20);
+            _rightEye.GotoPosition(20);
+            _wings.GotoPosition(90);
+            _head.GotoPosition(60);
+            Task.Delay(200).Wait();
+
+
+            _leftEye.GoHomePosition();
+            _rightEye.GoHomePosition();
+            _wings.GoHomePosition();
+            _head.GoHomePosition();
         }
 
         private void DoRandomShort()
         {
-            throw new NotImplementedException();
+            DoPlaceholder1();
         }
 
         private void DoRandomLong()
         {
-            throw new NotImplementedException();
+            DoPlaceholder1();
         }
 
         private void DoRandomFull()
         {
-            throw new NotImplementedException();
+            DoPlaceholder1();
         }
 
         private void DoHeadRight()
         {
-            throw new NotImplementedException();
+            _head.GotoPosition(90);
+            Task.Delay(3000).Wait();
+            _head.GoHomePosition();
         }
 
         private void DoHeadLeft()
         {
-            throw new NotImplementedException();
+            _head.GotoPosition(10);
+            Task.Delay(3000).Wait();
+            _head.GoHomePosition();
         }
 
         private void DoFlap()
         {
-            throw new NotImplementedException();
+            _wings.GotoPosition(60);
+            Task.Delay(200).Wait();
+            _wings.GoHomePosition();
         }
 
         private void DoCancelAllAndReset()
         {
-            throw new NotImplementedException();
+            Parallel.ForEach(PartsList, (part) =>
+            {
+                part.CancelApplyState();
+                part.GoHomePosition();
+            });
         }
 
         private void DoRecalibrate()
@@ -306,6 +324,8 @@ namespace BigOwl.OwlMasterController
 
         public override bool CancelApplyState()
         {
+            throw new NotImplementedException();
+
             bool bOK = true;
 
             Parallel.ForEach(PartsList, (part) =>
@@ -411,5 +431,34 @@ namespace BigOwl.OwlMasterController
         {
             FireDeviceError(sender.ToString() + " : " + error);
         }
+
+        private void DoPlaceholder1()
+        {
+            //Just some stuff
+            _leftEye.GotoPosition(20);
+            _rightEye.GotoPosition(20);
+            _head.GotoPosition(60);
+            _wings.GotoPosition(95);
+            Task.Delay(200).Wait();
+
+            _leftEye.GotoPosition(0);
+            _rightEye.GotoPosition(0);
+            _head.GotoPosition(40);
+            Task.Delay(200).Wait();
+
+            _leftEye.GotoPosition(20);
+            _rightEye.GotoPosition(20);
+            _wings.GotoPosition(90);
+            _head.GotoPosition(60);
+            Task.Delay(200).Wait();
+
+
+            _leftEye.GoHomePosition();
+            _rightEye.GoHomePosition();
+            _wings.GoHomePosition();
+            _head.GoHomePosition();
+
+        }
+
     }
 }

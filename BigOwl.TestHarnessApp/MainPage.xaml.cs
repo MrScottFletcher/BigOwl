@@ -69,15 +69,40 @@ namespace BigOwl.TestHarnessApp
             SetStatusLabel("TestButton_Finished");
         }
 
-        private void DoThingsButton_Click(object sender, RoutedEventArgs e)
+        private void WinkButton_Click(object sender, RoutedEventArgs e)
         {
-            SetStatusLabel("DoThingsButton_Click Start");
-
-            //RunThroughSteps();
-
+            SetStatusLabel("WinkButton_Click Start");
             RunEyeTest();
+            SetStatusLabel("WinkButton_Click FINISHED");
+        }
 
-            SetStatusLabel("DoThingsButton_Click FINISHED");
+        private void WiggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("WiggleButton_Click Start");
+            RunWiggleTest();
+            SetStatusLabel("WiggleButton_Click FINISHED");
+        }
+
+        private void HeadLeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("HeadLeftButton_Click Start");
+            RunHeadLeftTest();
+            SetStatusLabel("HeadLeftButton_Click FINISHED");
+        }
+
+
+        private void HeadRightButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("HeadRightButton_Click Start");
+            RunHeadRightTest();
+            SetStatusLabel("HeadRightButton_Click FINISHED");
+        }
+
+        private void WingFlapButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetStatusLabel("WingFlapButton_Click Start");
+            RunWingFlapTest();
+            SetStatusLabel("WingFlapButton_Click FINISHED");
         }
 
         private void SetStatusLabel(string msg)
@@ -96,6 +121,35 @@ namespace BigOwl.TestHarnessApp
             c.Command = OwlCommand.Commands.Wink;
             _owl.RunCommand(c);
         }
+
+        private void RunWiggleTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.SmallWiggle;
+            _owl.RunCommand(c);
+        }
+
+        private void RunHeadLeftTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.HeadLeft;
+            _owl.RunCommand(c);
+        }
+
+        private void RunHeadRightTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.HeadRight;
+            _owl.RunCommand(c);
+        }
+
+        private void RunWingFlapTest()
+        {
+            OwlCommand c = new OwlCommand();
+            c.Command = OwlCommand.Commands.Flap;
+            _owl.RunCommand(c);
+        }
+
 
         private void RunThroughSteps()
         {
@@ -170,5 +224,7 @@ namespace BigOwl.TestHarnessApp
                 }
             });
         }
+
+
     }
 }

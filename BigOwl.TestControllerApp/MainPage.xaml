@@ -8,9 +8,41 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button Content="Hello Owl" HorizontalAlignment="Left" Margin="261,169,0,0" VerticalAlignment="Top" Click="Button_Click"/>
-        <Button Name="TestButton" Content="Test Message" HorizontalAlignment="Left" Margin="258,208,0,0" VerticalAlignment="Top" Height="440" Width="1006" Click="TestButton_Click" FontSize="16"/>
-        <TextBlock x:Name="relayMessageTextBlock" HorizontalAlignment="Left" Margin="267,687,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="145" Width="990"/>
+        <Button Content="Hello Owl" HorizontalAlignment="Left" Margin="36,18,0,0" VerticalAlignment="Top" Click="Button_Click"/>
+        <Button Name="TestButton" Content="Test Message" HorizontalAlignment="Left" Margin="33,57,0,0" VerticalAlignment="Top" Height="43" Width="1006" Click="TestButton_Click" FontSize="16"/>
+        <TextBlock x:Name="relayMessageTextBlock" HorizontalAlignment="Left" Margin="36,905,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="1418"/>
+        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="40,751,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="138" Width="1380" FontSize="36"/>
+        <Button x:Name="WinkButton" Content="Do Eye Wink" HorizontalAlignment="Left" Margin="535,169,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" Click="WinkButton_Click" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto">
+            <Button.RenderTransform>
+                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+            </Button.RenderTransform>
+        </Button>
+        <Ellipse x:Name="statusLight" HorizontalAlignment="Left" Height="182" Margin="1076,172,0,0" VerticalAlignment="Top" Width="182" FocusVisualPrimaryBrush="Black" Fill="Black"/>
+        <Button x:Name="CalibrateAllButton" Content="Calibrate ALL" HorizontalAlignment="Left" Margin="40,121,0,0" VerticalAlignment="Top" Height="93" Width="396" FontSize="48" Click="CalibrateAllButton_Click"/>
+        <Button x:Name="CalibrateHeadButton" Content="Calibrate HEAD" HorizontalAlignment="Left" Margin="40,240,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateHeadButton_Click"/>
+        <Button x:Name="CalibrateWingsButton" Content="Calibrate WINGS" HorizontalAlignment="Left" Margin="40,349,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateWingsButton_Click"/>
+        <Button x:Name="CalibrateLEFTEyeButton" Content="Calibrate LEFT EYE" HorizontalAlignment="Left" Margin="40,456,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateLEFTEyeButton_Click"/>
+        <Button x:Name="CalibrateRIGHTEyeButton_Copy1" Content="Calibrate RIGHT EYE" HorizontalAlignment="Left" Margin="40,563,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateRIGHTEyeButton_Copy1_Click"/>
+        <Button x:Name="WiggleButton" Content="Do Wiggle" HorizontalAlignment="Left" Margin="535,278,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="WiggleButton_Click">
+            <Button.RenderTransform>
+                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+            </Button.RenderTransform>
+        </Button>
+        <Button x:Name="HeadLeftButton" Content="Do Head Left" HorizontalAlignment="Left" Margin="535,388,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="HeadLeftButton_Click" >
+            <Button.RenderTransform>
+                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+            </Button.RenderTransform>
+        </Button>
+        <Button x:Name="HeadRightButton" Content="Do Head Right" HorizontalAlignment="Left" Margin="535,498,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="HeadRightButton_Click" >
+            <Button.RenderTransform>
+                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+            </Button.RenderTransform>
+        </Button>
+        <Button x:Name="WingFlapButton" Content="Do Wing Flap" HorizontalAlignment="Left" Margin="535,608,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="WingFlapButton_Click" >
+            <Button.RenderTransform>
+                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+            </Button.RenderTransform>
+        </Button>
 
     </Grid>
 </Page>

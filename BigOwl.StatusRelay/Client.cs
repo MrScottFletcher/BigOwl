@@ -13,8 +13,8 @@ namespace BigOwl.StatusRelay
 {
     public class RelayClient
     {
-        //const string AppServiceName = "BigOwl.StatusRelayService";
-        const string AppServiceName = "BigOwlStatusRelayService";
+        const string AppServiceName = "BigOwl.StatusRelayService";
+        //const string AppServiceName = "BigOwlStatusRelayService";
 
         private AppServiceConnection _connection;
         public event Action<ValueSet> OnMessageReceived;
@@ -140,7 +140,7 @@ namespace BigOwl.StatusRelay
             throw new Exception("Error sending " + result.Status);
         }
 
-        public async Task SendOwlCommand(OwlCommand command)
+        public async Task SendOwlCommandAsync(OwlCommand command)
         {
             var message = new ValueSet();
             // Serialized classes are OK
@@ -167,7 +167,7 @@ namespace BigOwl.StatusRelay
             stream.Position = 0;
             var buffer = new byte[stream.Length];
             stream.Read(buffer, 0, (int)stream.Length);
-            
+
             return Encoding.UTF8.GetString(buffer);
         }
 

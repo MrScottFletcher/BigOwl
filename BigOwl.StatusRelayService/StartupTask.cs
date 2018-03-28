@@ -12,8 +12,9 @@ using Windows.Storage;
 //namespace UwpMessageRelay.MessageRelay
 /// <summary>
 /// Used the following as a kickstart for this class
+/// by Lee Richardson
 /// https://github.com/lprichar/UwpMessageRelay
-/// https://blogs.windows.com/buildingapps/2015/09/22/using-cross-app-communication-to-make-apps-work-together-10-by-10/
+/// https://visualstudiomagazine.com/articles/2017/02/01/solving-uwp.aspx
 /// </summary>
 
 namespace BigOwl.StatusRelayService
@@ -55,26 +56,25 @@ namespace BigOwl.StatusRelayService
                 connection.RequestReceived += ConnectionRequestReceived;
                 connection.ServiceClosed += ConnectionOnServiceClosed;
 
-                //Wanna do something for ap init by trigger?
-                //var appServiceTrigger = taskInstance.TriggerDetails as AppServiceTriggerDetails;
-                //if (appServiceTrigger != null)
+                ////Wanna do something for ap init by trigger?
+                //if (triggerDetails != null)
                 //{
                 //    //Verify that the app service connection is requesting the "StatusRelayService" that this class provides
-                //    if (appServiceTrigger.Name.Equals("StatusRelayService"))
+                //    if (triggerDetails.Name.Equals("StatusRelayService"))
                 //    {
                 //        //Store the connection and subscribe to the "RequestRecieved" event to be notified when clients send messages
-                //        connection = appServiceTrigger.AppServiceConnection;
-                //        connection.RequestReceived += Connection_RequestReceived;
+                //        connection = triggerDetails.AppServiceConnection;
+                //        connection.RequestReceived += ConnectionRequestReceived;
                 //    }
                 //    else
                 //    {
-                //        deferral.Complete();
+                //        _backgroundTaskDeferral.Complete();
                 //    }
                 //}
             }
             catch (Exception ex)
             {
-                await Error("Error in startup " + ex);
+                await Error("Error in startup " + ex.ToString());
             }
         }
 
@@ -100,7 +100,11 @@ namespace BigOwl.StatusRelayService
 
         private async Task Error(string message, Exception ex = null)
         {
-            await Write("ERROR", message + " - " + ex);
+            await Write("ERROR", message);
+            if (ex != null)
+            {
+                await Write("ERROR", "Exception Details: " + ex.ToString());
+            }
         }
 
         private async Task Info(string message)
@@ -139,23 +143,29 @@ namespace BigOwl.StatusRelayService
         private async void ConnectionRequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
         {
             // take out a deferral since we use await
-            var appServiceDeferral = args.GetDeferral();
+            AppServiceDeferral appServiceDeferral = null;
             try
             {
+                appServiceDeferral = args.GetDeferral();
                 await Debug("Request initiated by " + _thisConnectionGuid);
-
+                await Debug("Number of Connections: " + Connections.Count.ToString());
                 // .ToList() required since connections may get removed during SendMessage()
                 var otherConnections = Connections
                     .Where(i => i.Key != _thisConnectionGuid)
                     .ToList();
                 foreach (var connection in otherConnections)
                 {
+                    await Debug("Sending '" + args.Request.Message + "' to : " + connection.Key.ToString());
                     await SendMessage(connection, args.Request.Message);
                 }
             }
+            catch (Exception ex)
+            {
+                await Error("Error ConnectionRequestReceived initiated by " + _thisConnectionGuid + " Error: " + ex.ToString());
+            }
             finally
             {
-                appServiceDeferral.Complete();
+                appServiceDeferral?.Complete();
             }
         }
 
@@ -183,7 +193,7 @@ namespace BigOwl.StatusRelayService
             }
             catch (Exception ex)
             {
-                await Error("Error SendMessage to " + connection.Key + " " + ex);
+                await Error("Error SendMessage to " + connection.Key + " " + ex.ToString());
             }
         }
 
