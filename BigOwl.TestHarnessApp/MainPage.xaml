@@ -7,39 +7,37 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Button x:Name="TestButton" Content="Calibrate ALL" HorizontalAlignment="Left" Margin="82,41,0,0" VerticalAlignment="Top" Height="93" Width="396" FontSize="48" Click="TestButton_Click"/>
-        <TextBlock x:Name="statusLabel" HorizontalAlignment="Left" Margin="82,671,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top" Height="272" Width="1348" FontSize="36"/>
-        <Button x:Name="WinkButton" Content="Do Eye Wink" HorizontalAlignment="Left" Margin="577,89,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" Click="WinkButton_Click" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto">
-            <Button.RenderTransform>
-                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
-            </Button.RenderTransform>
-        </Button>
-        <Ellipse x:Name="statusLight" HorizontalAlignment="Left" Height="182" Margin="1118,92,0,0" VerticalAlignment="Top" Width="182" FocusVisualPrimaryBrush="Black" Fill="Black"/>
-        <Button x:Name="CalibrateHeadButton" Content="Calibrate HEAD" HorizontalAlignment="Left" Margin="82,160,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateHeadButton_Click"/>
-        <Button x:Name="CalibrateWingsButton" Content="Calibrate WINGS" HorizontalAlignment="Left" Margin="82,269,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateWingsButton_Click"/>
-        <Button x:Name="CalibrateLEFTEyeButton" Content="Calibrate LEFT EYE" HorizontalAlignment="Left" Margin="82,376,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateLEFTEyeButton_Click"/>
-        <Button x:Name="CalibrateRIGHTEyeButton_Copy1" Content="Calibrate RIGHT EYE" HorizontalAlignment="Left" Margin="82,483,0,0" VerticalAlignment="Top" Height="82" Width="396" FontSize="36" Click="CalibrateRIGHTEyeButton_Copy1_Click"/>
-        <Button x:Name="WiggleButton" Content="Do Wiggle" HorizontalAlignment="Left" Margin="577,198,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="WiggleButton_Click">
-            <Button.RenderTransform>
-                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
-            </Button.RenderTransform>
-        </Button>
-        <Button x:Name="HeadLeftButton" Content="Do Head Left" HorizontalAlignment="Left" Margin="577,308,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="HeadLeftButton_Click" >
-            <Button.RenderTransform>
-                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
-            </Button.RenderTransform>
-        </Button>
-        <Button x:Name="HeadRightButton" Content="Do Head Right" HorizontalAlignment="Left" Margin="577,418,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="HeadRightButton_Click" >
-            <Button.RenderTransform>
-                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
-            </Button.RenderTransform>
-        </Button>
-        <Button x:Name="WingFlapButton" Content="Do Wing Flap" HorizontalAlignment="Left" Margin="577,528,0,0" VerticalAlignment="Top" Height="91" Width="337" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="WingFlapButton_Click" >
-            <Button.RenderTransform>
-                <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
-            </Button.RenderTransform>
-        </Button>
+    <Grid Background="#FFA08155">
+
+
+        <Pivot x:Name="MainPivot" Title="Bearded Owl Control
+               " Margin="0,0,299,101" FontFamily="Segoe UI">
+            <PivotItem x:Name="pivotItemRuntime" Header="Runtime" Background="{x:Null}" BorderBrush="Black" Margin="0,0,0,0" >
+                <Grid/>
+            </PivotItem>
+            <PivotItem x:Name="pivotItemManual" Header="Manual" Margin="0,0,0,0" Background="White">
+                <Grid>
+                    <Button x:Name="TestButton" Content="Calibrate ALL" HorizontalAlignment="Left" Margin="52,36,0,0" VerticalAlignment="Top" Height="78" Width="333" FontSize="48" Click="TestButton_Click" FontFamily="Segoe UI"/>
+                    <Button x:Name="WinkButton" Content="Do Eye Wink" HorizontalAlignment="Left" Margin="450,46,0,0" VerticalAlignment="Top" Height="68" Width="283" FontSize="36" Click="WinkButton_Click" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto">
+                        <Button.RenderTransform>
+                            <CompositeTransform SkewX="-1.186" TranslateX="-1.884"/>
+                        </Button.RenderTransform>
+                    </Button>
+                    <Button x:Name="CalibrateHeadButton" Content="Calibrate HEAD" HorizontalAlignment="Left" Margin="52,141,0,0" VerticalAlignment="Top" Height="69" Width="333" FontSize="36" Click="CalibrateHeadButton_Click"/>
+                    <Button x:Name="CalibrateWingsButton" Content="Calibrate WINGS" HorizontalAlignment="Left" Margin="52,231,0,0" VerticalAlignment="Top" Height="69" Width="333" FontSize="36" Click="CalibrateWingsButton_Click"/>
+                    <Button x:Name="CalibrateLEFTEyeButton" Content="Calibrate LEFT EYE" HorizontalAlignment="Left" Margin="52,321,0,0" VerticalAlignment="Top" Height="69" Width="333" FontSize="36" Click="CalibrateLEFTEyeButton_Click"/>
+                    <Button x:Name="CalibrateRIGHTEyeButton_Copy1" Content="Calibrate RIGHT EYE" HorizontalAlignment="Left" Margin="52,411,0,0" VerticalAlignment="Top" Height="69" Width="333" FontSize="36" Click="CalibrateRIGHTEyeButton_Copy1_Click"/>
+                    <Button x:Name="WiggleButton" Content="Do Wiggle" HorizontalAlignment="Left" Margin="450,143,0,0" VerticalAlignment="Top" Height="68" Width="283" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="WiggleButton_Click"/>
+                    <Button x:Name="HeadLeftButton" Content="Do Head Left" HorizontalAlignment="Left" Margin="450,235,0,0" VerticalAlignment="Top" Height="68" Width="283" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="HeadLeftButton_Click" />
+                    <Button x:Name="HeadRightButton" Content="Do Head Right" HorizontalAlignment="Left" Margin="450,320,0,0" VerticalAlignment="Top" Height="68" Width="283" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="HeadRightButton_Click" />
+                    <Button x:Name="WingFlapButton" Content="Do Wing Flap" HorizontalAlignment="Left" Margin="450,408,0,0" VerticalAlignment="Top" Height="68" Width="283" FontSize="36" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" Click="WingFlapButton_Click" />
+                    <Button x:Name="returnToAutomatedButton" Content="Return to Automated" HorizontalAlignment="Left" Margin="52,531,0,0" VerticalAlignment="Top" Height="69" Width="398" FontSize="36" Click="CalibrateRIGHTEyeButton_Copy1_Click"/>
+                    <Button x:Name="ShutdownButton" Content="Shutdown" HorizontalAlignment="Right" Margin="0,0,51,42" VerticalAlignment="Bottom" Height="69" Width="266" FontSize="36" Click="CalibrateRIGHTEyeButton_Copy1_Click" Background="#FFD80F0F" Foreground="White" FontWeight="Bold"/>
+                </Grid>
+            </PivotItem>
+        </Pivot>
+        <Ellipse x:Name="statusLight" HorizontalAlignment="Right" Height="182" Margin="0,57,54,0" VerticalAlignment="Top" Width="182" FocusVisualPrimaryBrush="Black" Fill="Black"/>
+        <TextBlock x:Name="statusLabel" HorizontalAlignment="Stretch" Margin="73,0,39,0" Text="..." TextWrapping="Wrap" VerticalAlignment="Bottom" Height="58" FontSize="36" FontFamily="Segoe UI"/>
 
     </Grid>
 </Page>

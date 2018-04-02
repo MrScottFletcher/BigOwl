@@ -72,6 +72,7 @@ namespace BigOwl.Entity
         private void FireCommandAddedEvent(OwlCommand c)
         {
             CommandAdded?.Invoke(this, c);
+            FireQueueChangedEvent();
         }
         private void FireQueueChangedEvent()
         {
@@ -178,6 +179,30 @@ namespace BigOwl.Entity
             {
                 countRemoved = _commandList.RemoveAll(x => x.SourceAppId == sourceAppId);
                 FireQueueChangedEvent();
+            }
+            catch (Exception exAny)
+            {
+                //Log something?
+                throw;
+            }
+            finally
+            {
+                if (_lock.IsWriteLockHeld)
+                    _lock.ExitWriteLock();
+            }
+            return countRemoved;
+        }
+
+        public int RemoveAll()
+        {
+            int countRemoved = 0;
+            _lock.EnterWriteLock();
+            try
+            {
+                countRemoved = _commandList.Count();
+                _commandList.Clear();
+                FireQueueChangedEvent();
+                FireQueueEmptyEvent();
             }
             catch (Exception exAny)
             {

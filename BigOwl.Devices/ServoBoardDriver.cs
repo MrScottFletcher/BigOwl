@@ -150,7 +150,11 @@ namespace BigOwl.Devices
                 else
                 {
                     if (InvertDirection)
+                    {
                         ticks = Convert.ToUInt16(606 - ticks);
+                        if (ticks < 5)
+                            ticks = 5;
+                    }
 
                     _pca9685.SetPin(PortNumber, ticks, false);
                 }

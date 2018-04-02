@@ -21,8 +21,11 @@ namespace BigOwl.OwlMasterController
         private ServoBoardDriver.ServoPort _leftEye;
         private ServoBoardDriver.ServoPort _rightEye;
 
-
         public List<OwlControllerBase> PartsList { get; set; }
+
+
+        private object _taskLockObj = new object();
+        private Task _commandQueueTask;
 
         public Owl() : base(42)
         {
@@ -43,15 +46,14 @@ namespace BigOwl.OwlMasterController
                 _head.MaxPosition = 100;
                 _head.HomePosition = 50;
 
-                //Only for initial testing
-                _head.CurrentPosition = 100;
-
                 _head.DeviceError += _component_DeviceError;
                 _head.MoveCompleted += _component_MoveCompleted;
 
                 //one of these is not used
                 _head.BackwardLimitSensorChanged += _head_BackwardLimitReached;
                 _head.ForwardLimitSensorChanged += _head_ForwardLimitReached;
+
+                CommandQueue.CommandAdded += CommandQueue_CommandAdded;
 
                 PartsList.Add(_head);
             }
@@ -72,9 +74,6 @@ namespace BigOwl.OwlMasterController
                 _wings.MinPosition = 0;
                 _wings.MaxPosition = 100;
                 _wings.HomePosition = 95;
-
-                //Only for initial testing
-                _wings.CurrentPosition = 50;
 
                 _wings.DeviceError += _component_DeviceError;
                 _wings.MoveCompleted += _component_MoveCompleted;
@@ -123,6 +122,23 @@ namespace BigOwl.OwlMasterController
             }
         }
 
+        private void CommandQueue_CommandAdded(object sender, OwlCommand command)
+        {
+            bool needToStart = false;
+            //Only allow one task to be running
+            lock (_taskLockObj)
+            {
+                if (_commandQueueTask == null || _commandQueueTask.Status == TaskStatus.RanToCompletion || _commandQueueTask.Status == TaskStatus.Canceled || _commandQueueTask.Status == TaskStatus.Faulted)
+                {
+                    needToStart = true;
+                }
+                if (needToStart)
+                {
+                    _commandQueueTask = Task.Factory.StartNew(() => ProcessCommandQueue());
+                }
+            }
+        }
+
         private void _wings_BackwardLimitReached(object sender)
         {
             FireDeviceInfoMessage(sender.ToString() + " _wings_BackwardLimitReached");
@@ -147,9 +163,12 @@ namespace BigOwl.OwlMasterController
         {
             CommandQueue.Add(c);
             //Need to set up a queue event to fire this automatically.
-            ProcessCommandQueue();
+            //ProcessCommandQueue();
         }
 
+
+        // Should only be performed by _commandQueueTask.  Should probably move this into 
+        // a job manager object.
         protected void ProcessCommandQueue()
         {
             Status = OwlDeviceStateBase.StatusTypes.Busy;
@@ -167,7 +186,7 @@ namespace BigOwl.OwlMasterController
                             DoRecalibrate();
                             break;
                         case OwlCommand.Commands.CancelAllAndReset:
-                            DoCancelAllAndReset();
+                            CancelAllAndReset();
                             break;
                         case OwlCommand.Commands.Flap:
                             DoFlap();
@@ -196,6 +215,9 @@ namespace BigOwl.OwlMasterController
                         case OwlCommand.Commands.Wink:
                             DoWink();
                             break;
+                        case OwlCommand.Commands.Surprise:
+                            DoSurprise();
+                            break;
                         case OwlCommand.Commands.ApplyState:
                             ApplyOwlStateFromCommand(c);
                             break;
@@ -212,7 +234,24 @@ namespace BigOwl.OwlMasterController
             _rightEye.GotoPosition(50);
             Task.Delay(1500).Wait();
             _rightEye.GotoPosition(0);
+        }
 
+        private void DoSurprise()
+        {
+            List<Task> taskList = new List<Task>();
+            taskList.Add(Task.Factory.StartNew(() => _rightEye.GotoPosition(80)));
+            taskList.Add(Task.Factory.StartNew(() => _leftEye.GotoPosition(80)));
+            taskList.Add(Task.Factory.StartNew(() => _wings.GotoPosition(85)));
+
+            Task.WaitAll(taskList.ToArray());
+            Task.Delay(1500).Wait();
+
+            List<Task> taskListHome = new List<Task>();
+            taskListHome.Add(Task.Factory.StartNew(() => _rightEye.GoHomePosition()));
+            taskListHome.Add(Task.Factory.StartNew(() => _leftEye.GoHomePosition()));
+            taskListHome.Add(Task.Factory.StartNew(() => _wings.GoHomePosition()));
+
+            Task.WaitAll(taskList.ToArray());
         }
 
         private void DoSmallWiggle()
@@ -272,13 +311,16 @@ namespace BigOwl.OwlMasterController
 
         private void DoFlap()
         {
-            _wings.GotoPosition(60);
+            _wings.GotoPosition(10);
+            _wings.GotoPosition(20);
+            _wings.GotoPosition(90);
             Task.Delay(200).Wait();
             _wings.GoHomePosition();
         }
 
-        private void DoCancelAllAndReset()
+        private void CancelAllAndReset()
         {
+            CommandQueue.RemoveAll();
             Parallel.ForEach(PartsList, (part) =>
             {
                 part.CancelApplyState();
