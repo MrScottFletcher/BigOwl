@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.ExtendedExecution;
+using Windows.ApplicationModel.ExtendedExecution.Foreground;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System.Threading;
@@ -31,9 +33,10 @@ namespace BigOwl.StandaloneTouchpadApp
         private OwlMasterController.Owl _owl;
 
         ThreadPoolTimer _startupDelayTimer = null;
-
         ThreadPoolTimer _autoClockTimer = null;
-        public int autoActionMinutesInterval = 10;
+        ThreadPoolTimer _screensaverTimer = null;
+
+        public int autoActionMinutesInterval = 5;
         DateTime _lastAutoActionInitiated;
 
         Windows.System.Display.DisplayRequest _displayRequest;
@@ -45,6 +48,11 @@ namespace BigOwl.StandaloneTouchpadApp
         private bool? IsTimerEnabled;
 
         private Dictionary<int, OwlCommand.Commands> ActionSchedule;
+        private DateTime _lastTouchDetected;
+        private int _screensaverDelaySeconds = 10;
+
+        private int reverseX = 1;
+        private int reverseY = 1;
 
 
         public MainPage()
@@ -56,6 +64,7 @@ namespace BigOwl.StandaloneTouchpadApp
             _displayRequest = new Windows.System.Display.DisplayRequest();
             _displayRequest.RequestActive();
 
+
             _owl = new OwlMasterController.Owl();
 
             _owl.DeviceError += _component_DeviceError;
@@ -65,19 +74,23 @@ namespace BigOwl.StandaloneTouchpadApp
 
             _owl.Initialize();
 
-
+            this.PointerPressed += ScreensaverBG_PointerPressed;
             //Return the initializer call ASAP
 
             Task.Factory.StartNew(() =>
             {
                 ActionSchedule.Add(0, OwlCommand.Commands.RandomFull);
+                ActionSchedule.Add(5, OwlCommand.Commands.Wink);
                 ActionSchedule.Add(10, OwlCommand.Commands.HeadLeft);
+                ActionSchedule.Add(15, OwlCommand.Commands.Wink);
                 ActionSchedule.Add(20, OwlCommand.Commands.HeadRight);
-                ActionSchedule.Add(30, OwlCommand.Commands.Surprise);
-                ActionSchedule.Add(40, OwlCommand.Commands.Wink);
+                ActionSchedule.Add(25, OwlCommand.Commands.Wink);
+                ActionSchedule.Add(30, OwlCommand.Commands.RandomShort);
+                ActionSchedule.Add(35, OwlCommand.Commands.Wink);
+                ActionSchedule.Add(40, OwlCommand.Commands.Surprise);
+                ActionSchedule.Add(45, OwlCommand.Commands.Wink);
                 ActionSchedule.Add(50, OwlCommand.Commands.SmallWiggle);
-
-
+                ActionSchedule.Add(55, OwlCommand.Commands.Wink);
 
                 StringBuilder sbList = new StringBuilder();
                 sbList.AppendLine("SCHEDULE");
@@ -89,13 +102,43 @@ namespace BigOwl.StandaloneTouchpadApp
                 });
                 this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
+                    _lastTouchDetected = DateTime.Now;
                     startupDateTime = DateTime.Now;
                     _startupDelayTimer = ThreadPoolTimer.CreatePeriodicTimer(__startupDelayTimer_Tick, TimeSpan.FromMilliseconds(500));
                     _autoClockTimer = ThreadPoolTimer.CreatePeriodicTimer(_clockTimer_Tick, TimeSpan.FromMilliseconds(5000));
+                    _screensaverTimer = ThreadPoolTimer.CreatePeriodicTimer(_screensaver_Tick, TimeSpan.FromMilliseconds(5000));
+
                     SetStatusLight(Colors.Green);
                     scheduleTextBlock.Text = sbList.ToString();
                 });
+
+                var newSession = new ExtendedExecutionForegroundSession();
+                newSession.Reason = ExtendedExecutionForegroundReason.Unconstrained;
+                newSession.Description = "Long Running Processing";
+                newSession.Revoked += OnSessionRevoked;
+                //ExtendedExecutionResult result = newSession.RequestExtensionAsync().GetAwaiter().GetResult();
+
+                newSession.RequestExtensionAsync().GetAwaiter().GetResult();
+
+                //switch (result)
+                //{
+                //    case ExtendedExecutionResult.Allowed:
+                //        DoLongRunningWork();
+                //        break;
+
+                //    default:
+                //    case ExtendedExecutionResult.Denied:
+                //        DoShortRunningWork();
+                //        break;
+                //}
             });
+        }
+
+
+        private void OnSessionRevoked(object sender, ExtendedExecutionForegroundRevokedEventArgs args)
+        {
+            _owl.Shutdown();
+            Application.Current.Exit();
         }
 
         #region ############################# STARTUP Screen
@@ -189,11 +232,13 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private void DoNextNowButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             DoNextAutomatedAction();
         }
 
         private void ToggleAutoTimeButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             ToggleAutoTimerOnOff();
         }
 
@@ -218,7 +263,9 @@ namespace BigOwl.StandaloneTouchpadApp
                 {
                     IsTimerEnabled = true;
                     ToggleAutoTimeButton.Content = "Disable Auto";
-                    ToggleAutoTimeButton.Background = new SolidColorBrush(Colors.LightBlue);
+                    ToggleAutoTimeButton.Background = new SolidColorBrush(Colors.Black);
+                    ToggleAutoTimeButton.Opacity = 0.20;
+
                 }
             }
             else
@@ -269,6 +316,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private void RightScrollButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             if (mainPivotContainer.SelectedIndex < mainPivotContainer.Items.Count - 1)
                 mainPivotContainer.SelectedIndex = mainPivotContainer.SelectedIndex + 1;
             else
@@ -277,6 +325,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private void LeftScrollButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             if (mainPivotContainer.SelectedIndex > 0)
                 mainPivotContainer.SelectedIndex = mainPivotContainer.SelectedIndex - 1;
             else
@@ -286,6 +335,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void CalibrateButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("CalibrateButton_Click START");
             _startupDelayTimer?.Cancel();
 
@@ -311,6 +361,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void CancelAutoCalibrateButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             _startupDelayTimer?.Cancel();
             CancelAutoCalibrateButton.Visibility = Visibility.Collapsed;
             SetStatusLight(Colors.Orange);
@@ -323,6 +374,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void WinkButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("WinkButton_Click Start");
             RunEyeTest();
             SetStatusLabel("WinkButton_Click FINISHED");
@@ -330,6 +382,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void WiggleButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("WiggleButton_Click Start");
             RunWiggleTest();
             SetStatusLabel("WiggleButton_Click FINISHED");
@@ -337,6 +390,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void HeadLeftButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("HeadLeftButton_Click Start");
             RunHeadLeftTest();
             SetStatusLabel("HeadLeftButton_Click FINISHED");
@@ -345,6 +399,7 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void HeadRightButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("HeadRightButton_Click Start");
             RunHeadRightTest();
             SetStatusLabel("HeadRightButton_Click FINISHED");
@@ -352,12 +407,14 @@ namespace BigOwl.StandaloneTouchpadApp
 
         private async void WingFlapButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("WingFlapButton_Click Start");
             RunWingFlapTest();
             SetStatusLabel("WingFlapButton_Click FINISHED");
         }
         private async void HeadTurnButton_Click(object sender, RoutedEventArgs e)
         {
+            ResetScreensaverTimer();
             SetStatusLabel("HeadTurnButton_Click Start");
             RunHeadRightTest();
             RunHeadLeftTest();
@@ -423,14 +480,6 @@ namespace BigOwl.StandaloneTouchpadApp
 
         #endregion
 
-        private void ActivateScreensaver()
-        {
-            screensaverTranslation.X = 100;
-            screensaverTranslation.Y = 100;
-            ScreensaverImage.Visibility = Visibility.Visible;
-
-        }
-
         private void DeactivateScreensaver()
         {
             ScreensaverImage.Visibility = Visibility.Collapsed;
@@ -442,9 +491,9 @@ namespace BigOwl.StandaloneTouchpadApp
 
             ContentDialog confirmExitDialog = new ContentDialog
             {
-                Title = "Confirm Exit",
-                Content = "Are you sure that you want to exit?",
-                PrimaryButtonText = "Shutdown the Owl",
+                Title = "Confirm Exit/Reset",
+                Content = "Are you sure that you want to exit/reset?",
+                PrimaryButtonText = "Shutdown/Reset the Owl",
                 CloseButtonText = "Stay Here"
             };
 
@@ -461,6 +510,120 @@ namespace BigOwl.StandaloneTouchpadApp
                 // Do nothing.
             }
         }
+
+        #region ===================  SCREENSAVER
+
+        private void _screensaver_Tick(ThreadPoolTimer timer)
+        {
+            if (DateTime.Now > _lastTouchDetected.AddSeconds(_screensaverDelaySeconds))
+            {
+                RunScreesaver();
+            }
+        }
+
+        private void ResetScreensaverTimer()
+        {
+            _lastTouchDetected = DateTime.Now;
+        }
+
+        private void ScreensaverBG_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            _lastTouchDetected = DateTime.Now;
+            DisableScreesaver();
+        }
+
+        public void RunScreesaver()
+        {
+
+            string currentTimetext = DateTime.Now.ToShortTimeString();
+            string nextActionName = "(unkown)";
+            string nextTimeText = "(unkown)";
+
+
+            if (IsTimerEnabled.GetValueOrDefault())
+            {
+                DateTime nextTime = RoundTimeForwardByMinutes(DateTime.Now, autoActionMinutesInterval);
+
+                nextTimeText = nextTime.ToShortTimeString();
+
+                if (ActionSchedule.ContainsKey(nextTime.Minute))
+                {
+                    nextActionName = ActionSchedule[nextTime.Minute].ToString();
+                }
+            }
+
+            string nextActionText = String.Format("Current Time: {0}\r\nNext Event: {1}\r\nNextAction: {2}", currentTimetext, nextTimeText, nextActionName);
+
+            //============================================
+            //int min_X = 0;
+            //int min_Y = 0;
+
+            int max_X = 800;
+            int max_Y = 480;
+
+            double textWidth = 530;
+            double textHeight = 160;
+
+            //============================================
+
+            var ignored2 = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                // Do something on the dispatcher thread
+                ScreensaverBG.Margin = this.Margin;
+                //ScreensaverBG.Width = this.ActualWidth;
+                //ScreensaverBG.Height = this.ActualHeight;
+                ScreensaverBG.Width = 800;
+                ScreensaverBG.Height = 480;
+                ScreensaverBG.HorizontalAlignment = HorizontalAlignment.Stretch;
+                ScreensaverBG.VerticalAlignment = VerticalAlignment.Stretch;
+                ScreensaverBG.Visibility = Visibility.Visible;
+
+                screensaverText.Text = nextActionText;
+                if (screensaverText.Margin.Left > max_X)
+                {
+                    screensaverText.Margin = new Thickness(0, 0, textWidth, textHeight);
+                }
+
+                //screensaverText.Margin = new Thickness(newLeft, newTop, newRight, newBottom);
+
+
+                if (screensaverText.Margin.Right < 0)
+                    reverseX = -1;
+                if (screensaverText.Margin.Left < 0)
+                    reverseX = 1;
+
+                if (screensaverText.Margin.Bottom < 0)
+                    reverseY = -1;
+                if (screensaverText.Margin.Top < 0)
+                    reverseY = 1;
+
+                double new_X = screensaverText.Margin.Left + (20 * reverseX);
+                double new_Y = screensaverText.Margin.Top + (20 * reverseY);
+
+                screensaverText.Margin = new Thickness(new_X, new_Y, (max_X - new_X - textWidth), (max_Y - new_Y - textHeight));
+
+                //screensaverText.RenderTransform = new TranslateTransform
+                //{
+                //    X = translateX,
+                //    Y = translateY
+                //};
+
+                screensaverText.Visibility = Visibility.Visible;
+
+            });
+        }
+
+        public void DisableScreesaver()
+        {
+            var ignored2 = this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                // Do something on the dispatcher thread
+                ScreensaverBG.Visibility = Visibility.Collapsed;
+                screensaverText.Visibility = Visibility.Collapsed;
+            });
+        }
+
+        #endregion  
 
     }
 }

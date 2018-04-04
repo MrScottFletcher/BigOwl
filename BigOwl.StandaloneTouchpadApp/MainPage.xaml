@@ -39,13 +39,17 @@
                 </Grid>
             </PivotItem>
             <PivotItem x:Name="schedulePivotItem" Header="Schedule" Background="#FFC7E7FD" FontSize="20">
-                <TextBlock x:Name="scheduleTextBlock" HorizontalAlignment="Stretch" Margin="15,10,10,0" Text="(Schedule Here)" VerticalAlignment="Top" Height="325" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                <Grid>
+                    <TextBlock x:Name="scheduleTextBlock" HorizontalAlignment="Stretch" Margin="15,10,10,0" Text="(Schedule Here)" VerticalAlignment="Stretch" Height="323" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                </Grid>
             </PivotItem>
         </Pivot>
         <Button x:Name="LeftScrollButton" Content="&lt;" HorizontalAlignment="Left" Margin="0,62,0,0" VerticalAlignment="Top" Height="373" Width="105" FontSize="48" Click="LeftScrollButton_Click"/>
         <Button x:Name="RightScrollButton" Content="&gt;" HorizontalAlignment="Right" Margin="0,62,0,0" VerticalAlignment="Top" Height="373" Width="110" FontSize="48" Click="RightScrollButton_Click"/>
         <Image x:Name="ScreensaverImage" HorizontalAlignment="Left" Height="586" Margin="-177,-124,-169,-142" VerticalAlignment="Top" Width="826" FocusVisualSecondaryBrush="#00000000" Source="Assets/BO_Screensaver1.png" Visibility="Collapsed"/>
         <Button x:Name="exitButton" Content="EXIT" HorizontalAlignment="Left" Margin="0,3,0,0" VerticalAlignment="Top" Background="#33FF0808" Click="exitButton_Click" Height="47" Width="105"/>
+        <Rectangle x:Name="ScreensaverBG" HorizontalAlignment="Left" Height="241" Margin="854,3,-471,0" VerticalAlignment="Top" Width="417" Fill="Black"/>
+        <TextBlock x:Name="screensaverText" HorizontalAlignment="Left" Margin="867,62,-595,0" Text="Next Event: (unknown)" TextWrapping="Wrap" VerticalAlignment="Top" FocusVisualPrimaryBrush="White" Foreground="#FFA89C9C" FontSize="36" Height="160" Width="528" FontWeight="Bold"/>
 
     </Grid>
 </Page>
