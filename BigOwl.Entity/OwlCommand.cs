@@ -16,6 +16,7 @@ namespace BigOwl.Entity
             HeadRight,
             HeadLeft,
             SmallWiggle,
+            Surprise,
             RandomShort,
             RandomLong,
             RandomFull,

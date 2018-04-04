@@ -388,6 +388,8 @@ namespace BigOwl.StepperControl
 
         public override bool CancelApplyState()
         {
+            throw new NotImplementedException();
+
             bool bOK = false;
             MovesCancelled = true;
             State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.GoingHome;
