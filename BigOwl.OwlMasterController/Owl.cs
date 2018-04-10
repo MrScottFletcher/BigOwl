@@ -41,7 +41,7 @@ namespace BigOwl.OwlMasterController
             {
                 //Forward = Head moves "right", so we have a forward sensor on it.
 
-                _head = new StepperControl.OwlStepperController("Head", 19, 26, 13, 6, 5, 21, 16, null, 5, false);
+                _head = new StepperControl.OwlStepperController("Head", 19, 26, 13, 6, 5, 21, null, 16, 5, false);
                 _head.MinPosition = 0;
                 _head.MaxPosition = 100;
                 _head.HomePosition = 50;
@@ -231,16 +231,16 @@ namespace BigOwl.OwlMasterController
 
         private void DoWink()
         {
-            _rightEye.GotoPosition(50);
+            _rightEye.GotoPosition(15);
             Task.Delay(1500).Wait();
-            _rightEye.GotoPosition(0);
+            _rightEye.GoHomePosition();
         }
 
         private void DoSurprise()
         {
             List<Task> taskList = new List<Task>();
-            taskList.Add(Task.Factory.StartNew(() => _rightEye.GotoPosition(80)));
-            taskList.Add(Task.Factory.StartNew(() => _leftEye.GotoPosition(80)));
+            taskList.Add(Task.Factory.StartNew(() => _rightEye.GotoPosition(30)));
+            taskList.Add(Task.Factory.StartNew(() => _leftEye.GotoPosition(30)));
             taskList.Add(Task.Factory.StartNew(() => _wings.GotoPosition(85)));
 
             Task.WaitAll(taskList.ToArray());
@@ -256,8 +256,8 @@ namespace BigOwl.OwlMasterController
 
         private void DoSmallWiggle()
         {
-            _leftEye.GotoPosition(20);
-            _rightEye.GotoPosition(20);
+            _leftEye.GotoPosition(10);
+            _rightEye.GotoPosition(10);
             _head.GotoPosition(60);
             _wings.GotoPosition(95);
             Task.Delay(200).Wait();
@@ -267,8 +267,8 @@ namespace BigOwl.OwlMasterController
             _head.GotoPosition(40);
             Task.Delay(200).Wait();
 
-            _leftEye.GotoPosition(20);
-            _rightEye.GotoPosition(20);
+            _leftEye.GotoPosition(10);
+            _rightEye.GotoPosition(10);
             _wings.GotoPosition(90);
             _head.GotoPosition(60);
             Task.Delay(200).Wait();
@@ -297,14 +297,14 @@ namespace BigOwl.OwlMasterController
 
         private void DoHeadRight()
         {
-            _head.GotoPosition(90);
+            _head.GotoPosition(75);
             Task.Delay(3000).Wait();
             _head.GoHomePosition();
         }
 
         private void DoHeadLeft()
         {
-            _head.GotoPosition(10);
+            _head.GotoPosition(25);
             Task.Delay(3000).Wait();
             _head.GoHomePosition();
         }
@@ -312,7 +312,6 @@ namespace BigOwl.OwlMasterController
         private void DoFlap()
         {
             _wings.GotoPosition(10);
-            _wings.GotoPosition(20);
             _wings.GotoPosition(90);
             Task.Delay(200).Wait();
             _wings.GoHomePosition();
@@ -477,8 +476,8 @@ namespace BigOwl.OwlMasterController
         private void DoPlaceholder1()
         {
             //Just some stuff
-            _leftEye.GotoPosition(20);
-            _rightEye.GotoPosition(20);
+            _leftEye.GotoPosition(90);
+            _rightEye.GotoPosition(90);
             _head.GotoPosition(60);
             _wings.GotoPosition(95);
             Task.Delay(200).Wait();
@@ -488,8 +487,8 @@ namespace BigOwl.OwlMasterController
             _head.GotoPosition(40);
             Task.Delay(200).Wait();
 
-            _leftEye.GotoPosition(20);
-            _rightEye.GotoPosition(20);
+            _leftEye.GotoPosition(80);
+            _rightEye.GotoPosition(80);
             _wings.GotoPosition(90);
             _head.GotoPosition(60);
             Task.Delay(200).Wait();
