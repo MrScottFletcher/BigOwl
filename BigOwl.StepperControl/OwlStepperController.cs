@@ -201,9 +201,6 @@ namespace BigOwl.StepperControl
 
                     CurrentPosition = CurrentPosition.Value + positionDiff;
 
-                    //Task t = this.Driver.Turn(Convert.ToUInt32(stepsDiff), 1);
-                    //t.Wait();
-
                     this.Driver.DisableOutputs();
                     this.Driver.Sleep();
                     State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Sleeping;
