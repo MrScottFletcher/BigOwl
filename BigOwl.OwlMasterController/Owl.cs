@@ -23,10 +23,76 @@ namespace BigOwl.OwlMasterController
 
         public List<OwlControllerBase> PartsList { get; set; }
 
+        bool _enableHead;
+        bool _enableWings;
+        bool _enableLeftEye;
+        bool _enableRightEye;
+
+        public bool EnableHead
+        {
+            get { return _enableHead; }
+            set
+            {
+                if (_enableHead != value)
+                {
+                    _enableHead = value;
+                    SetControlEnabled(_head, _enableHead);
+                }
+            }
+        }
+        public bool EnableWings
+        {
+            get { return _enableWings; }
+            set
+            {
+                if (_enableWings != value)
+                {
+                    _enableWings = value;
+                    SetControlEnabled(_wings, _enableWings);
+                }
+            }
+        }
+
+        public bool EnableRightEye
+        {
+            get { return _enableRightEye; }
+            set
+            {
+                if (_enableRightEye != value)
+                {
+                    _enableRightEye = value;
+                    SetControlEnabled(_rightEye, _enableRightEye);
+                }
+            }
+        }
+
+        public bool EnableLeftEye
+        {
+            get { return _enableLeftEye; }
+            set
+            {
+                if (_enableLeftEye != value)
+                {
+                    _enableLeftEye = value;
+                    SetControlEnabled(_leftEye, _enableLeftEye);
+                }
+            }
+        }
 
         private object _taskLockObj = new object();
         private Task _commandQueueTask;
 
+        public Owl(bool enableHead, bool enableWings, bool enableRightEye, bool enableLeftEye) : this()
+        {
+            _enableHead = enableHead;
+            _enableWings = enableWings;
+            _enableRightEye = enableRightEye;
+            _enableLeftEye = enableLeftEye;
+        }
+
+        /// <summary>
+        /// By default, this will NOT enable any components.  Must call the override
+        /// </summary>
         public Owl() : base(42)
         {
             CommandQueue = new OwlCommandQueue();
@@ -63,7 +129,6 @@ namespace BigOwl.OwlMasterController
                 this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.InError;
                 this.LastError += exHead.ToString();
             }
-
             try
             {
                 //Forward = Wings up
@@ -119,6 +184,24 @@ namespace BigOwl.OwlMasterController
                 this.Status = OwlDeviceStateBase.StatusTypes.InError;
                 this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.InError;
                 this.LastError += exPWM.ToString();
+            }
+        }
+
+        private void SetComponentsEnabled()
+        {
+            SetControlEnabled(this._rightEye, EnableRightEye);
+            SetControlEnabled(this._leftEye, EnableLeftEye);
+            SetControlEnabled(this._head, EnableHead);
+            SetControlEnabled(this._wings, EnableWings);
+        }
+
+        private static void SetControlEnabled(OwlControllerBase ctl, bool bEnabled)
+        {
+            if (ctl.IsControlEnabled != bEnabled)
+            {
+                ctl.IsControlEnabled = bEnabled;
+                ctl.Initialize();
+                ctl.Recalibrate();
             }
         }
 
@@ -256,8 +339,8 @@ namespace BigOwl.OwlMasterController
 
         private void DoSmallWiggle()
         {
-            _leftEye.GotoPosition(10);
-            _rightEye.GotoPosition(10);
+            _leftEye.GotoPosition(15);
+            _rightEye.GotoPosition(15);
             _head.GotoPosition(60);
             _wings.GotoPosition(95);
             Task.Delay(200).Wait();
@@ -267,8 +350,8 @@ namespace BigOwl.OwlMasterController
             _head.GotoPosition(40);
             Task.Delay(200).Wait();
 
-            _leftEye.GotoPosition(10);
-            _rightEye.GotoPosition(10);
+            _leftEye.GotoPosition(15);
+            _rightEye.GotoPosition(15);
             _wings.GotoPosition(90);
             _head.GotoPosition(60);
             Task.Delay(200).Wait();
@@ -476,8 +559,8 @@ namespace BigOwl.OwlMasterController
         private void DoPlaceholder1()
         {
             //Just some stuff
-            _leftEye.GotoPosition(90);
-            _rightEye.GotoPosition(90);
+            _leftEye.GotoPosition(25);
+            _rightEye.GotoPosition(10);
             _head.GotoPosition(60);
             _wings.GotoPosition(95);
             Task.Delay(200).Wait();
@@ -487,8 +570,8 @@ namespace BigOwl.OwlMasterController
             _head.GotoPosition(40);
             Task.Delay(200).Wait();
 
-            _leftEye.GotoPosition(80);
-            _rightEye.GotoPosition(80);
+            _leftEye.GotoPosition(10);
+            _rightEye.GotoPosition(25);
             _wings.GotoPosition(90);
             _head.GotoPosition(60);
             Task.Delay(200).Wait();

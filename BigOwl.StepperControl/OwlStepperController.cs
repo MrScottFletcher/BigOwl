@@ -169,6 +169,11 @@ namespace BigOwl.StepperControl
 
         public override void GotoPosition(int p)
         {
+            GotoPosition(p, false);
+        }
+
+        private void GotoPosition(int p, bool relaxAfterMove)
+        {
             if (VerifyInitialized())
             {
                 MovesCancelled = false;
@@ -201,9 +206,16 @@ namespace BigOwl.StepperControl
 
                     CurrentPosition = CurrentPosition.Value + positionDiff;
 
-                    this.Driver.DisableOutputs();
-                    this.Driver.Sleep();
-                    State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Sleeping;
+                    if (relaxAfterMove)
+                    {
+                        this.Driver.DisableOutputs();
+                        this.Driver.Sleep();
+                        State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Sleeping;
+                    }
+                    else
+                    {
+                        State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Awake;
+                    }
                 }
 
                 FireMoveCompleted();
@@ -356,7 +368,7 @@ namespace BigOwl.StepperControl
         public override void GoHomePosition()
         {
             State.StatusReason = OwlDeviceStateBase.StatusReasonTypes.GoingHome;
-            GotoPosition(HomePosition.Value);
+            GotoPosition(HomePosition.Value, true);
             FireMoveCompleted();
         }
 

@@ -43,6 +43,16 @@
                     <TextBlock x:Name="scheduleTextBlock" HorizontalAlignment="Stretch" Margin="15,10,10,0" Text="(Schedule Here)" VerticalAlignment="Stretch" Height="323" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                 </Grid>
             </PivotItem>
+            <PivotItem x:Name="configPivotItem" Header="Schedule" Background="#FFC7E7FD" FontSize="20">
+                <Grid>
+                    <CheckBox x:Name="enableHeadCheckbox" Content="Head" HorizontalAlignment="Left" Margin="39,71,0,0" VerticalAlignment="Top" FontSize="20" Height="41" Width="289"/>
+                    <CheckBox x:Name="enableWingsCheckbox" Content="Wings" HorizontalAlignment="Left" Margin="39,131,0,0" VerticalAlignment="Top" FontSize="20" Height="41" Width="289"/>
+                    <CheckBox x:Name="enableRightEyeCheckbox" Content="Right Eye" HorizontalAlignment="Left" Margin="39,197,0,0" VerticalAlignment="Top" FontSize="20" Height="41" Width="289"/>
+                    <CheckBox x:Name="enableLeftEyeCheckbox" Content="Left Eye" HorizontalAlignment="Left" Margin="39,266,0,0" VerticalAlignment="Top" FontSize="20" Width="289" Height="41"/>
+                    <Button x:Name="saveConfigButton" Content="Save Config" HorizontalAlignment="Left" Margin="369,259,0,0" VerticalAlignment="Top" Height="56" Width="161" FontSize="24" FontWeight="Bold" Click="saveConfigButton_Click"/>
+                    <TextBlock x:Name="enablePartsLabel" HorizontalAlignment="Left" Margin="10,10,0,0" Text="Enable Owl Parts" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="36"/>
+                </Grid>
+            </PivotItem>
         </Pivot>
         <Button x:Name="LeftScrollButton" Content="&lt;" HorizontalAlignment="Left" Margin="0,62,0,0" VerticalAlignment="Top" Height="373" Width="105" FontSize="48" Click="LeftScrollButton_Click"/>
         <Button x:Name="RightScrollButton" Content="&gt;" HorizontalAlignment="Right" Margin="0,62,0,0" VerticalAlignment="Top" Height="373" Width="110" FontSize="48" Click="RightScrollButton_Click"/>
