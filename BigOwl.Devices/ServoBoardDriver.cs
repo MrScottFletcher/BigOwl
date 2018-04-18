@@ -92,23 +92,33 @@ namespace BigOwl.Devices
 
             public override void Recalibrate()
             {
-                int delay = 500;
-                try
+                if (this.IsControlEnabled)
                 {
-
-                    for (int i = 0; i <= 100; i++)
+                    int delay = 500;
+                    try
                     {
-                        GotoPosition(i);
-                        Task.Delay(200).Wait();
+
+                        for (int i = 0; i <= 100; i++)
+                        {
+                            GotoPosition(i);
+                            Task.Delay(200).Wait();
+                        }
+                        GoHomePosition();
                     }
-                    GoHomePosition();
+                    catch (Exception exAny)
+                    {
+                        string msg = string.Format(
+                            "Errror: {0}",
+                            exAny.ToString());
+                        string s = "";
+                    }
                 }
-                catch (Exception exAny)
+                else
                 {
-                    string msg = string.Format(
-                        "Errror: {0}",
-                        exAny.ToString());
-                    string s = "";
+                    //not enabled
+                    this.Status = OwlDeviceStateBase.StatusTypes.Unavailable;
+                    this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Unknown;
+                    this.CurrentPosition = null;
                 }
             }
 
@@ -135,28 +145,38 @@ namespace BigOwl.Devices
 
             public override void GotoPosition(int position)
             {
-                if (position < 0 || position > 100)
-                    throw new ArgumentOutOfRangeException("position", position, "Position must be between 0-100");
-
-                //Might need to invert the range for left eye vs. right eye.
-                //double angle = 100d / 180d * (double)position;
-                double angle = 1.8d * (double)position;
-
-                var ticks = Convert.ToUInt16(120 + (2.7d * angle));
-                if (ticks > 606)
+                if (this.IsControlEnabled)
                 {
-                    FireDeviceError($"ticks {ticks} greater than {602} aka 180 degrees");
+                    if (position < 0 || position > 100)
+                        throw new ArgumentOutOfRangeException("position", position, "Position must be between 0-100");
+
+                    //Might need to invert the range for left eye vs. right eye.
+                    //double angle = 100d / 180d * (double)position;
+                    double angle = 1.8d * (double)position;
+
+                    var ticks = Convert.ToUInt16(120 + (2.7d * angle));
+                    if (ticks > 606)
+                    {
+                        FireDeviceError($"ticks {ticks} greater than {602} aka 180 degrees");
+                    }
+                    else
+                    {
+                        if (InvertDirection)
+                        {
+                            ticks = Convert.ToUInt16(606 - ticks);
+                            if (ticks < 5)
+                                ticks = 5;
+                        }
+
+                        _pca9685.SetPin(PortNumber, ticks, false);
+                    }
                 }
                 else
                 {
-                    if (InvertDirection)
-                    {
-                        ticks = Convert.ToUInt16(606 - ticks);
-                        if (ticks < 5)
-                            ticks = 5;
-                    }
-
-                    _pca9685.SetPin(PortNumber, ticks, false);
+                    //not enabled
+                    this.Status = OwlDeviceStateBase.StatusTypes.Unavailable;
+                    this.StatusReason = OwlDeviceStateBase.StatusReasonTypes.Unknown;
+                    this.CurrentPosition = null;
                 }
             }
         }

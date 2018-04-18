@@ -82,18 +82,25 @@ namespace BigOwl.OwlMasterController
         private object _taskLockObj = new object();
         private Task _commandQueueTask;
 
-        public Owl(bool enableHead, bool enableWings, bool enableRightEye, bool enableLeftEye) : this()
+        public Owl(bool enableHead, bool enableWings, bool enableRightEye, bool enableLeftEye) : base(42)
         {
             _enableHead = enableHead;
             _enableWings = enableWings;
             _enableRightEye = enableRightEye;
             _enableLeftEye = enableLeftEye;
+
+            InitializeParts();
         }
 
         /// <summary>
         /// By default, this will NOT enable any components.  Must call the override
         /// </summary>
         public Owl() : base(42)
+        {
+            InitializeParts();
+        }
+
+        private void InitializeParts()
         {
             CommandQueue = new OwlCommandQueue();
             PartsList = new List<OwlControllerBase>();
@@ -108,6 +115,7 @@ namespace BigOwl.OwlMasterController
                 //Forward = Head moves "right", so we have a forward sensor on it.
 
                 _head = new StepperControl.OwlStepperController("Head", 19, 26, 13, 6, 5, 21, null, 16, 5, false);
+                _head.IsControlEnabled = _enableHead;
                 _head.MinPosition = 0;
                 _head.MaxPosition = 100;
                 _head.HomePosition = 50;
@@ -132,10 +140,14 @@ namespace BigOwl.OwlMasterController
             try
             {
                 //Forward = Wings up
-                //Screw drive travels 0.125 incehes per 100 steps.  
-                //5" would be 4000 steps
-                //Converting to position factor: 4000 / 100 = 40 steps per position increment
-                _wings = new StepperControl.OwlStepperController("Wings", 17, 18, 22, 23, 24, 25, 12, 4, 40, true);
+                //Screw drive travels 0.125 incehes per 100 steps.
+                //2.5 inches is 8 rotations, 
+                //Each rotation 200 steps at 1.8 degress per step.
+                //2.5 inches is 1600 steps (8 rotations at 200 steps each)
+                //Converting to position factor: 1600 / 100 = 16 steps per position increment
+                int stepToPositionFactor = 16;
+                _wings = new StepperControl.OwlStepperController("Wings", 17, 18, 22, 23, 24, 25, 12, 4, stepToPositionFactor, true);
+                _wings.IsControlEnabled = _enableWings;
                 _wings.MinPosition = 0;
                 _wings.MaxPosition = 100;
                 _wings.HomePosition = 95;
@@ -166,9 +178,13 @@ namespace BigOwl.OwlMasterController
                 try
                 {
                     _leftEye = new ServoBoardDriver.ServoPort("Left Eye", 0, _pwmDriver._pca9685, false);
+                    _leftEye.IsControlEnabled = _enableLeftEye;
                     _rightEye = new ServoBoardDriver.ServoPort("Right Eye", 1, _pwmDriver._pca9685, true);
+                    _rightEye.IsControlEnabled = _enableRightEye;
+
                     _leftEye.Initialize();
                     PartsList.Add(_leftEye);
+
                     _rightEye.Initialize();
                     PartsList.Add(_rightEye);
                 }
