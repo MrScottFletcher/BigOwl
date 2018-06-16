@@ -17,6 +17,8 @@ namespace BigOwl.Devices
         public OwlDeviceStateBase.StatusTypes Status { get; set; }
         public OwlDeviceStateBase.StatusReasonTypes StatusReason { get; set; }
 
+        public bool IsControlEnabled { get; set; }
+
         public bool StayEngagedAfterMove { get; set; }
         public bool ReturnHomeAfterMove { get; set; }
         public int DelaySecondsBeforeReturnHome { get; set; }

@@ -10,6 +10,7 @@ using Windows.ApplicationModel.ExtendedExecution;
 using Windows.ApplicationModel.ExtendedExecution.Foreground;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.System.Threading;
 using Windows.UI;
 using Windows.UI.Core;
@@ -54,7 +55,6 @@ namespace BigOwl.StandaloneTouchpadApp
         private int reverseX = 1;
         private int reverseY = 1;
 
-
         public MainPage()
         {
             ActionSchedule = new Dictionary<int, OwlCommand.Commands>();
@@ -64,8 +64,24 @@ namespace BigOwl.StandaloneTouchpadApp
             _displayRequest = new Windows.System.Display.DisplayRequest();
             _displayRequest.RequestActive();
 
+            //===================================
+            //Get values from config
 
-            _owl = new OwlMasterController.Owl();
+            Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+
+            enableWingsCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableWings");
+            enableHeadCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableHead");
+            enableLeftEyeCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableLeftEye");
+            enableRightEyeCheckbox.IsChecked = GetConfig_Bool(localSettings, "EnableRightEye");
+
+            //===================================
+
+            _owl = new OwlMasterController.Owl(
+                enableHeadCheckbox.IsChecked.GetValueOrDefault(),
+                enableWingsCheckbox.IsChecked.GetValueOrDefault(),
+                enableRightEyeCheckbox.IsChecked.GetValueOrDefault(),
+                enableLeftEyeCheckbox.IsChecked.GetValueOrDefault());
 
             _owl.DeviceError += _component_DeviceError;
             _owl.MoveCompleted += _component_MoveCompleted;
@@ -132,6 +148,31 @@ namespace BigOwl.StandaloneTouchpadApp
                 //        break;
                 //}
             });
+        }
+
+        private static bool GetConfig_Bool(Windows.Storage.ApplicationDataContainer localSettings, string st)
+        {
+            bool b = false;
+            Object value = localSettings.Values[st];
+            if (value != null)
+                b = (bool)value;
+
+            return b;
+        }
+
+        private static void SetConfig_Bool(Windows.Storage.ApplicationDataContainer localSettings, string st, bool val)
+        {
+            localSettings.Values[st] = val;
+        }
+
+        private void saveConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            SetConfig_Bool(localSettings, "EnableWings", enableWingsCheckbox.IsChecked.GetValueOrDefault());
+            SetConfig_Bool(localSettings, "EnableHead", enableHeadCheckbox.IsChecked.GetValueOrDefault());
+            SetConfig_Bool(localSettings, "EnableLeftEye", enableLeftEyeCheckbox.IsChecked.GetValueOrDefault());
+            SetConfig_Bool(localSettings, "EnableRightEye", enableRightEyeCheckbox.IsChecked.GetValueOrDefault());
+
         }
 
 
@@ -623,7 +664,7 @@ namespace BigOwl.StandaloneTouchpadApp
             });
         }
 
-        #endregion  
+        #endregion
 
     }
 }
