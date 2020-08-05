@@ -5,11 +5,11 @@ I built an owl sculpture for a brewery in Peoria, Illinois called Bearded Owl Br
 
 This project has a few phases.
 1) Just make some stuff move. - DONE
-2) Make a standalone Touchscreen app with some simple scheduling
+2) Make a standalone Touchscreen app with some simple scheduling - DONE!
 3) Web-enable it with a simple HTTP web server with some buttons, etc.
 4) Connect it to Azure IoT Hub.  Maybe.  Who knows.
 5) Connect to Facebook API for actions when people "Like" the bar's page.
-6) Add LEB lights on the back of the wings, control with PWM controller
+6) Add LED lights on the back of the wings, control with PWM controller
 7) Profit?
 
 Disclaimer - The source code is a patchwork of clever original ideas and stuff I Googled/Pasted.  I think the most blatant copy/pastes are annoted with attribution, but I might have missed a spot (or just haven't deleted the sample yet).  It's apparent that I really did not know what I was doing when I started.
